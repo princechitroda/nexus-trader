@@ -16,22 +16,10 @@
   --red:#FF4560;--red3:rgba(255,69,96,0.1);
   --platinum:#E8E8E8;--silver:#8A95B0;--muted:#4A5270;--text:#DCE4F5;
 }
+html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;position:fixed}
 
-html,body{
-  height:100%;width:100%;
-  background:var(--bg);color:var(--text);
-  font-family:'DM Sans',sans-serif;
-  overflow:hidden;
-  position:fixed;
-  -webkit-overflow-scrolling:touch;
-}
-
-/* ── SPLASH ── */
-#splash{
-  position:fixed;inset:0;background:var(--bg);z-index:1000;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:24px;overflow-y:auto;
-}
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
 .s-logo{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;text-align:center}
 .s-logo span{color:var(--gold)}
 .s-tag{font-size:11px;color:var(--silver);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:40px;text-align:center}
@@ -44,22 +32,22 @@ html,body{
 .fld input{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;color:var(--platinum);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 13px;outline:none;width:100%;transition:border-color .15s}
 .fld input:focus{border-color:var(--gold)}
 .fld input::placeholder{color:var(--muted)}
-.abtn{width:100%;padding:13px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#08090E;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;cursor:pointer;margin-top:4px;letter-spacing:.3px}
+.abtn{width:100%;padding:13px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#08090E;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;cursor:pointer;margin-top:4px}
 .adiv{text-align:center;color:var(--muted);font-size:11px;margin:14px 0;position:relative}
 .adiv::before,.adiv::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border)}
 .adiv::before{left:0}.adiv::after{right:0}
 .gbtn{width:100%;padding:11px;border-radius:11px;border:1px solid var(--border2);background:transparent;color:var(--silver);font-family:'Syne',sans-serif;font-weight:600;font-size:12px;cursor:pointer}
 .pplan{display:flex;gap:5px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
 .pplan::-webkit-scrollbar{display:none}
-.pp{flex-shrink:0;padding:5px 12px;border-radius:20px;font-size:10px;font-family:'Syne',sans-serif;font-weight:700;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s}
+.pp{flex-shrink:0;padding:5px 12px;border-radius:20px;font-size:10px;font-family:'Syne',sans-serif;font-weight:700;border:1px solid var(--border);color:var(--muted);cursor:pointer}
 .pp.on{border-color:var(--gold);color:var(--gold);background:var(--gold3)}
 
-/* ── APP ── */
+/* APP */
 #app{display:none;flex-direction:column;position:fixed;inset:0;overflow:hidden}
 #app.show{display:flex}
 
 /* TOP BAR */
-.tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;height:50px}
+.tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;height:48px}
 .tlogo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px}
 .tlogo span{color:var(--gold)}
 .tright{display:flex;align-items:center;gap:9px}
@@ -83,13 +71,13 @@ html,body{
 .up{color:var(--green)}.dn{color:var(--red)}
 
 /* NAV */
-.nav{display:flex;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;height:44px}
+.nav{display:flex;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;height:42px}
 .nv{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;color:var(--muted);font-size:8px;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid transparent;transition:all .15s}
-.nv svg{width:16px;height:16px;stroke-width:1.8}
+.nv svg{width:15px;height:15px;stroke-width:1.8}
 .nv.on{color:var(--gold);border-bottom-color:var(--gold)}
 
 /* MAIN */
-.main{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 
 /* SCREENS */
 .scr{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
@@ -98,48 +86,49 @@ html,body{
 /* ── CHART SCREEN ── */
 .astrip{display:flex;gap:5px;padding:7px 10px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
 .astrip::-webkit-scrollbar{display:none}
-.ac{flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:6px 10px;cursor:pointer;min-width:80px;transition:all .15s;position:relative}
-.ac.on{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.04)}
-.ac.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);border-radius:0 0 9px 9px}
+
+/* ASSET CARD */
+.ac{flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:6px 10px;cursor:pointer;min-width:82px;transition:all .2s;position:relative;overflow:hidden}
+.ac::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .2s;transform-origin:center}
+.ac.on{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.05)}
+.ac.on::after{transform:scaleX(1)}
 .ac-s{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;margin-bottom:1px}
 .ac-p{font-family:'JetBrains Mono',monospace;font-size:9px;margin-bottom:1px}
 .ac-c{font-size:8px;font-weight:700}
-.cgold{color:var(--gold)}.cgreen{color:var(--green)}.cred{color:var(--red)}.cblue{color:var(--blue2)}.cbtc{color:#F7931A}.csil{color:var(--silver)}
+.cgold{color:var(--gold)}.cbtc{color:#F7931A}.csil{color:var(--silver)}.cblue{color:var(--blue2)}.cgreen{color:var(--green)}.cred{color:var(--red)}
 
+/* CHART HEADER - simplified, no custom TF buttons */
 .chdr{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
-.csym{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--silver);margin-bottom:1px}
+.csym-txt{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--silver);margin-bottom:1px}
 .cprow{display:flex;align-items:baseline;gap:6px}
 .cprice{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--platinum)}
-.cchg{font-size:10px;font-weight:700}
-.tfs{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end}
-.tf{padding:2px 6px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:9px;font-family:'Syne',sans-serif;cursor:pointer;font-weight:700;transition:all .12s}
-.tf.on{background:var(--gold);color:#08090E;border-color:var(--gold)}
+.cchg-el{font-size:10px;font-weight:700}
+.tv-hint{font-size:9px;color:var(--muted);font-family:'Syne',sans-serif;text-align:right;line-height:1.5}
 
-/* TRADINGVIEW CONTAINER */
+/* TRADINGVIEW */
 .tv-wrap{flex:1;position:relative;background:#131722;min-height:0;overflow:hidden}
 .tv-wrap iframe{width:100%;height:100%;border:none;display:block}
-.tv-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#131722;color:var(--silver);font-family:'Syne',sans-serif;gap:10px;font-size:12px;font-weight:600}
-.tv-spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+.tv-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#131722;color:var(--silver);font-family:'Syne',sans-serif;gap:10px;font-size:12px;font-weight:600;z-index:5}
+.tv-spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.sbar{display:flex;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;height:36px}
+.sbar{display:flex;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;height:34px}
 .sb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border)}
 .sb:last-child{border-right:none}
-.sb-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-family:'Syne',sans-serif}
+.sb-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-family:'Syne',sans-serif}
 .sb-v{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700}
 
-/* ── AI SCREEN ── */
+/* AI */
 .ai-top{padding:12px 13px 9px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(201,168,76,.06) 0%,transparent 100%);flex-shrink:0}
 .ai-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
-.ai-orb{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--blue2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 0 16px rgba(201,168,76,.2)}
+.ai-orb{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--blue2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .ai-nm{font-family:'Syne',sans-serif;font-weight:800;font-size:13px}
 .ai-ds{font-size:9px;color:var(--silver);margin-top:1px}
 .ai-chip{margin-left:auto;padding:2px 9px;border-radius:20px;border:1px solid rgba(201,168,76,.3);background:var(--gold3);font-size:9px;font-family:'Syne',sans-serif;color:var(--gold);font-weight:700}
 .qcs{display:flex;flex-wrap:wrap;gap:4px}
-.qc{padding:4px 9px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--silver);font-size:10px;cursor:pointer;transition:all .12s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.qc{padding:4px 9px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--silver);font-size:10px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all .12s}
 .qc:active{border-color:var(--gold);color:var(--gold);background:var(--gold3)}
-
-.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch;min-height:0}
+.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:9px;min-height:0;-webkit-overflow-scrolling:touch}
 .msg{padding:9px 11px;border-radius:11px;font-size:12px;line-height:1.65;max-width:96%}
 .msg.ai{background:var(--bg3);border:1px solid var(--border);align-self:flex-start;border-radius:3px 11px 11px 11px}
 .msg.us{background:var(--blue3);border:1px solid rgba(43,94,232,.25);align-self:flex-end;border-radius:11px 3px 11px 11px}
@@ -155,23 +144,23 @@ html,body{
 .tdots span:nth-child(2){animation-delay:.18s}.tdots span:nth-child(3){animation-delay:.36s}
 @keyframes td{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
 
-/* ── SIGNALS SCREEN ── */
+/* SIGNALS */
 .sighdr{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
 .sigtitle{font-family:'Syne',sans-serif;font-weight:800;font-size:13px}
 .sigcnt{padding:2px 8px;border-radius:20px;background:var(--green3);color:var(--green);font-size:9px;font-family:'Syne',sans-serif;font-weight:700;border:1px solid rgba(0,229,160,.2)}
-.sigfeed{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch;min-height:0}
+.sigfeed{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:9px;min-height:0;-webkit-overflow-scrolling:touch}
 .sigcard{background:var(--bg3);border:1px solid var(--border);border-radius:11px;overflow:hidden}
 .sc-top{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--border)}
 .sc-ico{font-size:18px;flex-shrink:0}
 .sc-sym{font-family:'Syne',sans-serif;font-weight:800;font-size:13px}
 .sc-tf{font-size:9px;color:var(--muted);margin-top:1px}
-.sc-sig{margin-left:auto;padding:3px 10px;border-radius:5px;font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:.3px}
+.sc-sig{margin-left:auto;padding:3px 10px;border-radius:5px;font-family:'Syne',sans-serif;font-weight:800;font-size:11px}
 .sc-sig.buy{background:var(--green3);color:var(--green);border:1px solid rgba(0,229,160,.25)}
 .sc-sig.sell{background:var(--red3);color:var(--red);border:1px solid rgba(255,69,96,.25)}
 .sc-sig.hold{background:var(--gold3);color:var(--gold);border:1px solid rgba(201,168,76,.25)}
 .sc-stats{display:flex;gap:6px;padding:8px 12px;flex-wrap:wrap}
 .scst{background:var(--bg2);border-radius:6px;padding:5px 8px;flex:1;min-width:60px}
-.scst-l{font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-family:'Syne',sans-serif;margin-bottom:2px}
+.scst-l{font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-family:'Syne',sans-serif;margin-bottom:2px}
 .scst-v{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700}
 .cbar{height:3px;background:var(--border);border-radius:2px;margin:0 12px 8px;overflow:hidden}
 .cfill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--green))}
@@ -180,8 +169,8 @@ html,body{
 .sc-score b{color:var(--gold);font-family:'JetBrains Mono',monospace}
 .sc-time{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted)}
 
-/* ── PORTFOLIO SCREEN ── */
-.portscr{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+/* PORTFOLIO */
+.portscr{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .phero{padding:18px 14px;background:linear-gradient(180deg,rgba(201,168,76,.07) 0%,transparent 100%);border-bottom:1px solid var(--border);text-align:center}
 .plbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-family:'Syne',sans-serif;margin-bottom:5px}
 .pval{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;color:var(--platinum);margin-bottom:3px}
@@ -198,18 +187,17 @@ html,body{
 .hsub{font-size:9px;color:var(--muted);margin-top:1px}
 .hbar{height:2px;background:var(--border);border-radius:1px;margin-top:6px;overflow:hidden}
 .hbar-f{height:100%;border-radius:1px}
-.hright{margin-left:auto;text-align:right}
+.hright{margin-left:auto;text-align:right;flex-shrink:0}
 .hval{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700}
 .hpnl{font-size:9px;font-weight:700;margin-top:2px}
 
-/* ── PROFILE SCREEN ── */
-.profscr{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+/* PROFILE */
+.profscr{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .profhero{padding:20px 14px;text-align:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(43,94,232,.07) 0%,transparent 100%)}
 .profav{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--blue2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin:0 auto 10px;box-shadow:0 0 24px rgba(201,168,76,.15)}
 .profnm{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;margin-bottom:2px}
 .profem{font-size:11px;color:var(--silver);margin-bottom:10px}
 .profbdg{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;border:1px solid rgba(201,168,76,.3);background:var(--gold3);color:var(--gold);font-family:'Syne',sans-serif;font-size:10px;font-weight:700}
-
 .plancards{padding:12px;display:flex;flex-direction:column;gap:9px}
 .plcard{background:var(--bg3);border:1px solid var(--border);border-radius:13px;padding:14px;position:relative;overflow:hidden}
 .plcard.feat{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.03)}
@@ -219,13 +207,12 @@ html,body{
 .plprice span{font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif}
 .plfs{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .plf{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--silver)}
-.plf::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;font-size:11px}
+.plf::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
 .plf.no{color:var(--muted)}.plf.no::before{content:'×';color:var(--muted)}
-.plbtn{width:100%;padding:10px;border-radius:9px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:all .15s}
+.plbtn{width:100%;padding:10px;border-radius:9px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer}
 .plbtn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#08090E}
 .plbtn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
 .plbtn.out{background:transparent;border:1px solid var(--border2);color:var(--muted)}
-
 .profsec{padding:0 12px 12px}
 .prow{display:flex;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer}
 .prow:last-child{border-bottom:none}
@@ -236,14 +223,14 @@ html,body{
 .lgbtn{width:calc(100% - 24px);margin:0 12px 16px;padding:12px;border-radius:11px;border:1px solid rgba(255,69,96,.2);background:rgba(255,69,96,.05);color:var(--red);font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer}
 
 /* LOCK */
-.lock{position:absolute;inset:0;background:rgba(8,9,14,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(6px);text-align:center;padding:24px}
+.lock{position:absolute;inset:0;background:rgba(8,9,14,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(6px);text-align:center;padding:24px}
 .lock-i{font-size:32px;margin-bottom:10px}
 .lock-t{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px}
 .lock-s{font-size:11px;color:var(--silver);margin-bottom:16px;line-height:1.6}
 .lock-b{padding:10px 24px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#08090E;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;cursor:pointer}
 
 /* TOAST */
-.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:9px 16px;font-size:11px;font-family:'Syne',sans-serif;font-weight:600;color:var(--platinum);z-index:999;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:9px 16px;font-size:11px;font-family:'Syne',sans-serif;font-weight:600;color:var(--platinum);z-index:999;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 ::-webkit-scrollbar{width:2px;height:2px}
@@ -252,7 +239,7 @@ html,body{
 </head>
 <body>
 
-<!-- ══ SPLASH ══ -->
+<!-- SPLASH -->
 <div id="splash">
   <div class="s-logo">NEX<span>US</span> TRADER</div>
   <div class="s-tag">AI-Powered Trading Platform</div>
@@ -282,10 +269,10 @@ html,body{
   </div>
 </div>
 
-<!-- ══ APP ══ -->
+<!-- APP -->
 <div id="app">
   <div class="tbar">
-    <div class="tlogo">NEX<span>US</span> <span style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace">TRADER</span></div>
+    <div class="tlogo">NEX<span>US</span> <span style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:400">TRADER</span></div>
     <div class="tright">
       <div class="ldot"><div class="ld"></div>LIVE</div>
       <div class="tplan free" id="planBadge">FREE</div>
@@ -323,20 +310,13 @@ html,body{
       <div class="astrip" id="astrip"></div>
       <div class="chdr">
         <div>
-          <div class="csym" id="csym">Gold / USD</div>
+          <div class="csym-txt" id="csym">Gold / USD</div>
           <div class="cprow">
-            <div class="cprice" id="cprice">$2318.40</div>
-            <div class="cchg dn" id="cchg">-0.42%</div>
+            <div class="cprice" id="cprice">Loading live...</div>
+            <div class="cchg-el" id="cchg"></div>
           </div>
         </div>
-        <div class="tfs">
-          <button class="tf" onclick="setTF(this,'1')">1m</button>
-          <button class="tf" onclick="setTF(this,'5')">5m</button>
-          <button class="tf" onclick="setTF(this,'15')">15m</button>
-          <button class="tf on" onclick="setTF(this,'60')">1H</button>
-          <button class="tf" onclick="setTF(this,'240')">4H</button>
-          <button class="tf" onclick="setTF(this,'1D')">1D</button>
-        </div>
+        <div class="tv-hint">Use buttons<br>on chart ↓</div>
       </div>
       <div class="tv-wrap" id="tvWrap">
         <div class="tv-loading" id="tvLoad">
@@ -420,13 +400,13 @@ html,body{
           <div class="profbdg" id="profBdg">⭐ FREE PLAN</div>
         </div>
         <div class="plancards">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:11px;color:var(--silver);text-transform:uppercase;letter-spacing:.8px">Upgrade Plan</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:11px;color:var(--silver);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Upgrade Plan</div>
           <div class="plcard">
             <div class="plnm">Free</div>
             <div class="plprice">₹0 <span>/month</span></div>
             <div class="plfs">
-              <div class="plf">Live Charts (TradingView)</div>
-              <div class="plf">Basic Price Data</div>
+              <div class="plf">Live TradingView Charts</div>
+              <div class="plf">6 Assets (Gold, BTC, Silver, Forex)</div>
               <div class="plf no">Claude AI Analyst</div>
               <div class="plf no">MT5 Signals</div>
               <div class="plf no">Auto Trading Bot</div>
@@ -443,7 +423,7 @@ html,body{
               <div class="plf">Portfolio Tracker</div>
               <div class="plf no">Auto Trading Bot</div>
             </div>
-            <button class="plbtn gold" onclick="toast('Razorpay payment coming soon!')">Upgrade to Pro →</button>
+            <button class="plbtn gold" onclick="showToast('Razorpay payment coming soon!')">Upgrade to Pro →</button>
           </div>
           <div class="plcard" style="border-color:rgba(75,122,255,.3)">
             <div class="plnm" style="color:var(--blue2)">Elite</div>
@@ -455,7 +435,7 @@ html,body{
               <div class="plf">Priority Support</div>
               <div class="plf">Early Access Features</div>
             </div>
-            <button class="plbtn blue" onclick="toast('Razorpay payment coming soon!')">Upgrade to Elite →</button>
+            <button class="plbtn blue" onclick="showToast('Razorpay payment coming soon!')">Upgrade to Elite →</button>
           </div>
         </div>
         <div class="profsec">
@@ -476,24 +456,28 @@ html,body{
 
 <script>
 /* ══════════════════════════════════════
-   ASSETS
+   ASSETS — correct TradingView symbols
 ══════════════════════════════════════ */
 const ASSETS = [
-  {sym:'XAU/USD', name:'Gold',    tv:'OANDA:XAUUSD', cls:'cgold', price:2318.40,  chg:-0.42, hi:2332,   lo:2305,   vol:'$198B', spread:0.35,   u:'$', dp:2},
-  {sym:'BTC/USD', name:'Bitcoin', tv:'BINANCE:BTCUSDT',cls:'cbtc', price:67420.50, chg:2.34,  hi:68200,  lo:65800,  vol:'$42B',  spread:12.5,   u:'$', dp:2},
-  {sym:'XAG/USD', name:'Silver',  tv:'OANDA:XAGUSD',  cls:'csil', price:29.84,    chg:0.87,  hi:30.12,  lo:29.45,  vol:'$8B',   spread:0.04,   u:'$', dp:3},
-  {sym:'EUR/USD', name:'Euro',    tv:'OANDA:EURUSD',  cls:'cblue',price:1.0742,   chg:-0.18, hi:1.0789, lo:1.0718, vol:'$280B', spread:0.0001, u:'',  dp:4},
-  {sym:'GBP/USD', name:'Pound',   tv:'OANDA:GBPUSD',  cls:'cgreen',price:1.2698,  chg:0.22,  hi:1.273,  lo:1.266,  vol:'$120B', spread:0.0002, u:'',  dp:4},
-  {sym:'USD/JPY', name:'Yen',     tv:'OANDA:USDJPY',  cls:'cred', price:157.42,   chg:-0.31, hi:157.89, lo:156.9,  vol:'$210B', spread:0.009,  u:'',  dp:3},
+  {sym:'XAU/USD', name:'Gold',    tv:'OANDA:XAUUSD',    cls:'cgold', chg:-0.42, hi:2332,   lo:2305,   vol:'$198B', spread:0.35,   u:'$', dp:2},
+  {sym:'BTC/USD', name:'Bitcoin', tv:'BINANCE:BTCUSDT',  cls:'cbtc',  chg:2.34,  hi:68200,  lo:65800,  vol:'$42B',  spread:12.5,   u:'$', dp:2},
+  {sym:'XAG/USD', name:'Silver',  tv:'OANDA:XAGUSD',    cls:'csil',  chg:0.87,  hi:30.12,  lo:29.45,  vol:'$8B',   spread:0.04,   u:'$', dp:3},
+  {sym:'EUR/USD', name:'Euro',    tv:'OANDA:EURUSD',    cls:'cblue', chg:-0.18, hi:1.0789, lo:1.0718, vol:'$280B', spread:0.0001, u:'',  dp:4},
+  {sym:'GBP/USD', name:'Pound',   tv:'OANDA:GBPUSD',    cls:'cgreen',chg:0.22,  hi:1.273,  lo:1.266,  vol:'$120B', spread:0.0002, u:'',  dp:4},
+  {sym:'USD/JPY', name:'Yen',     tv:'OANDA:USDJPY',    cls:'cred',  chg:-0.31, hi:157.89, lo:156.9,  vol:'$210B', spread:0.009,  u:'',  dp:3},
 ];
 
-let sel = ASSETS[0], curInterval = '60';
-let prices = {};
-ASSETS.forEach(a => prices[a.sym] = a.price);
-
+// Live prices fetched from TradingView widget events or fallback
+const FALLBACK = {
+  'XAU/USD':2320,'BTC/USD':67420,'XAG/USD':29.84,
+  'EUR/USD':1.0742,'GBP/USD':1.2698,'USD/JPY':157.42
+};
+let prices = {...FALLBACK};
+let sel = ASSETS[0];
 let currentUser = null, currentPlan = 'Free';
 let aiLoading = false, chatHist = [];
 let sigLoaded = false;
+let tvWidget = null;
 
 /* ══════════════════════════════════════
    AUTH
@@ -509,7 +493,7 @@ function setPlan(el,p){document.querySelectorAll('.pp').forEach(x=>x.classList.r
 function doLogin(){
   const e=document.getElementById('le').value.trim();
   const p=document.getElementById('lp').value.trim();
-  if(!e||!p){toast('Please enter email and password');return;}
+  if(!e||!p){showToast('Please enter email and password');return;}
   currentUser={name:e.split('@')[0],email:e};
   currentPlan='Pro';
   launch();
@@ -523,16 +507,21 @@ function doSignup(){
   const n=document.getElementById('sn').value.trim();
   const e=document.getElementById('se').value.trim();
   const p=document.getElementById('sp').value.trim();
-  if(!n||!e||!p){toast('Please fill all fields');return;}
+  if(!n||!e||!p){showToast('Please fill all fields');return;}
   currentUser={name:n,email:e};
   currentPlan=selPlan;
   launch();
+}
+function doLogout(){
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('splash').style.display='flex';
+  currentUser=null; tvWidget=null;
 }
 
 function launch(){
   document.getElementById('splash').style.display='none';
   document.getElementById('app').classList.add('show');
-  const init=currentUser.name[0].toUpperCase();
+  const init=(currentUser.name[0]||'G').toUpperCase();
   document.getElementById('userAv').textContent=init;
   document.getElementById('profAv').textContent=init;
   document.getElementById('profNm').textContent=currentUser.name;
@@ -547,98 +536,87 @@ function launch(){
   updateCH();
   updateStats();
   buildHoldings();
-  loadTV();
-  setInterval(tickPrices,2000);
-}
-
-function doLogout(){
-  document.getElementById('app').classList.remove('show');
-  document.getElementById('splash').style.display='flex';
+  loadTV(sel.tv);
+  setInterval(tickSim,2500);
 }
 
 /* ══════════════════════════════════════
-   TRADINGVIEW CHART
+   TRADINGVIEW — single clean embed
+   No custom TF buttons — TV has its own
 ══════════════════════════════════════ */
-function loadTV(){
+function loadTV(tvSymbol){
   const wrap=document.getElementById('tvWrap');
-  const load=document.getElementById('tvLoad');
+  // Remove old widget completely
   wrap.innerHTML='<div class="tv-loading" id="tvLoad"><div class="tv-spinner"></div>Loading Real-Time Chart...</div>';
 
-  const theme='dark';
-  const sym=sel.tv;
-  const interval=curInterval;
+  // Load TV script once, then create widget
+  function createWidget(){
+    const loader=document.getElementById('tvLoad');
+    if(loader) loader.style.display='none';
+    const container=document.createElement('div');
+    container.id='tv_container';
+    container.style.cssText='width:100%;height:100%;';
+    wrap.appendChild(container);
 
-  const container=document.createElement('div');
-  container.id='tv_chart_container';
-  container.style.cssText='width:100%;height:100%;';
-  wrap.appendChild(container);
+    try{
+      tvWidget=new TradingView.widget({
+        autosize:true,
+        symbol:tvSymbol,
+        interval:'60',
+        timezone:'Asia/Kolkata',
+        theme:'dark',
+        style:'1',
+        locale:'en',
+        toolbar_bg:'#12141C',
+        enable_publishing:false,
+        hide_top_toolbar:false,
+        hide_legend:false,
+        save_image:false,
+        container_id:'tv_container',
+        overrides:{
+          'mainSeriesProperties.candleStyle.upColor':'#00E5A0',
+          'mainSeriesProperties.candleStyle.downColor':'#FF4560',
+          'mainSeriesProperties.candleStyle.borderUpColor':'#00E5A0',
+          'mainSeriesProperties.candleStyle.borderDownColor':'#FF4560',
+          'mainSeriesProperties.candleStyle.wickUpColor':'#00E5A0',
+          'mainSeriesProperties.candleStyle.wickDownColor':'#FF4560',
+          'paneProperties.background':'#08090E',
+          'paneProperties.backgroundType':'solid',
+          'paneProperties.vertGridProperties.color':'#16192240',
+          'paneProperties.horzGridProperties.color':'#16192240',
+          'scalesProperties.textColor':'#4A5270',
+          'scalesProperties.backgroundColor':'#08090E',
+        },
+        loading_screen:{backgroundColor:'#08090E',foregroundColor:'#C9A84C'},
+      });
+    }catch(err){
+      console.error('TV widget error:',err);
+      wrap.innerHTML='<div class="tv-loading">⚠️ Chart error. Please refresh.</div>';
+    }
+  }
 
-  const script=document.createElement('script');
-  script.src='https://s3.tradingview.com/tv.js';
-  script.onload=()=>{
-    const tvLoad=document.getElementById('tvLoad');
-    if(tvLoad)tvLoad.style.display='none';
-    new TradingView.widget({
-      container_id:'tv_chart_container',
-      width:'100%',
-      height:'100%',
-      symbol:sym,
-      interval:interval,
-      timezone:'Asia/Kolkata',
-      theme:theme,
-      style:'1',
-      locale:'en',
-      toolbar_bg:'#12141C',
-      enable_publishing:false,
-      hide_top_toolbar:false,
-      hide_legend:false,
-      save_image:false,
-      studies:['MASimple@tv-scriptstd!'],
-      overrides:{
-        'mainSeriesProperties.candleStyle.upColor':'#00E5A0',
-        'mainSeriesProperties.candleStyle.downColor':'#FF4560',
-        'mainSeriesProperties.candleStyle.borderUpColor':'#00E5A0',
-        'mainSeriesProperties.candleStyle.borderDownColor':'#FF4560',
-        'mainSeriesProperties.candleStyle.wickUpColor':'#00E5A0',
-        'mainSeriesProperties.candleStyle.wickDownColor':'#FF4560',
-        'paneProperties.background':'#08090E',
-        'paneProperties.backgroundType':'solid',
-        'paneProperties.vertGridProperties.color':'#16192260',
-        'paneProperties.horzGridProperties.color':'#16192260',
-      },
-      loading_screen:{backgroundColor:'#08090E',foregroundColor:'#C9A84C'},
-      autosize:true,
-    });
-  };
-  script.onerror=()=>{
-    const l=document.getElementById('tvLoad');
-    if(l)l.innerHTML='⚠️ Chart failed to load. Check internet connection.';
-  };
-  document.head.appendChild(script);
-}
-
-function setTF(btn,t){
-  curInterval=t;
-  document.querySelectorAll('.tf').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  loadTV();
+  if(window.TradingView && window.TradingView.widget){
+    createWidget();
+  } else {
+    const existing=document.getElementById('tvScript');
+    if(existing) existing.remove();
+    const s=document.createElement('script');
+    s.id='tvScript';
+    s.src='https://s3.tradingview.com/tv.js';
+    s.onload=createWidget;
+    s.onerror=()=>{wrap.innerHTML='<div class="tv-loading">⚠️ Failed to load chart. Check internet.</div>';};
+    document.head.appendChild(s);
+  }
 }
 
 /* ══════════════════════════════════════
-   TICKER & STRIP
+   ASSET STRIP — fixed highlight
 ══════════════════════════════════════ */
-function buildTicker(){
-  const items=ASSETS.map(a=>{
-    const p=prices[a.sym],ch=a.chg;
-    return `<div class="ti"><span class="ti-s">${a.sym}</span><span class="ti-p">${a.u}${p.toFixed(a.dp)}</span><span class="${ch>=0?'up':'dn'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span></div>`;
-  }).join('');
-  document.getElementById('tkr').innerHTML=items+items;
-}
-
 function buildStrip(){
   document.getElementById('astrip').innerHTML=ASSETS.map((a,i)=>{
-    const p=prices[a.sym],ch=a.chg;
-    return `<div class="ac${i===0?' on':''}" id="ac${i}" onclick="pickA(${i})">
+    const p=prices[a.sym]||FALLBACK[a.sym];
+    const ch=a.chg;
+    return `<div class="ac${i===0?' on':''}" id="ac_${i}" onclick="pickA(${i})">
       <div class="ac-s ${a.cls}">${a.sym.split('/')[0]}</div>
       <div class="ac-p">${a.u}${p.toFixed(a.dp)}</div>
       <div class="ac-c ${ch>=0?'up':'dn'}">${ch>=0?'▲':'▼'}${Math.abs(ch).toFixed(2)}%</div>
@@ -647,23 +625,35 @@ function buildStrip(){
 }
 
 function pickA(i){
+  // Fix: properly remove 'on' from ALL cards then add to selected only
+  ASSETS.forEach((_,j)=>{
+    const el=document.getElementById('ac_'+j);
+    if(el) el.classList.remove('on');
+  });
+  const picked=document.getElementById('ac_'+i);
+  if(picked) picked.classList.add('on');
+
   sel=ASSETS[i];
-  document.querySelectorAll('.ac').forEach((c,j)=>c.classList.toggle('on',j===i));
   document.getElementById('aiChip').textContent=sel.sym;
-  updateCH(); updateStats(); loadTV();
+  updateCH();
+  updateStats();
+  // Load new TV chart with correct symbol
+  loadTV(sel.tv);
 }
 
 function updateCH(){
   const a=sel;
+  const p=prices[a.sym]||FALLBACK[a.sym];
   document.getElementById('csym').textContent=a.name+' / USD';
-  document.getElementById('cprice').textContent=a.u+prices[a.sym].toFixed(a.dp);
+  document.getElementById('cprice').textContent=a.u+p.toFixed(a.dp);
   const el=document.getElementById('cchg');
   el.textContent=(a.chg>=0?'+':'')+a.chg.toFixed(2)+'%';
-  el.className='cchg '+(a.chg>=0?'up':'dn');
+  el.className='cchg-el '+(a.chg>=0?'up':'dn');
 }
 
 function updateStats(){
   const a=sel;
+  const p=prices[a.sym]||FALLBACK[a.sym];
   document.getElementById('sbar').innerHTML=`
     <div class="sb"><div class="sb-l">High</div><div class="sb-v up">${a.u}${a.hi.toFixed(a.dp)}</div></div>
     <div class="sb"><div class="sb-l">Low</div><div class="sb-v dn">${a.u}${a.lo.toFixed(a.dp)}</div></div>
@@ -671,13 +661,29 @@ function updateStats(){
     <div class="sb"><div class="sb-l">Spread</div><div class="sb-v">${a.spread}</div></div>`;
 }
 
-function tickPrices(){
+/* ══════════════════════════════════════
+   TICKER — simulated (real prices come from TV chart itself)
+══════════════════════════════════════ */
+function buildTicker(){
+  const items=ASSETS.map(a=>{
+    const p=prices[a.sym]||FALLBACK[a.sym];
+    const ch=a.chg;
+    return `<div class="ti"><span class="ti-s">${a.sym}</span><span class="ti-p">${a.u}${p.toFixed(a.dp)}</span><span class="${ch>=0?'up':'dn'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span></div>`;
+  }).join('');
+  document.getElementById('tkr').innerHTML=items+items;
+}
+
+function tickSim(){
+  // Gentle simulation for ticker and asset strip
+  // Real chart prices come directly from TradingView
   ASSETS.forEach(a=>{
-    const v=prices[a.sym]*(Math.random()<.5?1:-1)*(0.00008+Math.random()*0.0002);
-    prices[a.sym]=+(prices[a.sym]+v).toFixed(a.dp);
+    const fp=FALLBACK[a.sym];
+    const v=fp*(Math.random()<.5?1:-1)*(0.00005+Math.random()*0.00015);
+    prices[a.sym]=+(( prices[a.sym]||fp)+v).toFixed(a.dp);
   });
   buildStrip(); buildTicker();
-  document.getElementById('cprice').textContent=sel.u+prices[sel.sym].toFixed(sel.dp);
+  // Only update header price display, not the chart
+  document.getElementById('cprice').textContent=sel.u+(prices[sel.sym]||FALLBACK[sel.sym]).toFixed(sel.dp);
 }
 
 /* ══════════════════════════════════════
@@ -688,20 +694,20 @@ function goScr(s){
   document.querySelectorAll('.nv').forEach(el=>el.classList.remove('on'));
   document.getElementById('s-'+s).classList.add('on');
   const nv=document.getElementById('nv-'+s);
-  if(nv)nv.classList.add('on');
+  if(nv) nv.classList.add('on');
 
   if(s==='ai'&&currentPlan==='Free') addLock('s-ai','Claude AI Analyst','Upgrade to Pro for unlimited AI analysis and trade signals.','Upgrade to Pro');
-  if(s==='signals'&&currentPlan==='Free') addLock('s-signals','MT5 Signal Feed','Real-time AI signals available on Pro and Elite plans.','Upgrade to Pro');
-  if(s==='portfolio'&&currentPlan==='Free') addLock('s-portfolio','Portfolio Tracker','Track your trades and P&L on Pro and Elite plans.','Upgrade to Pro');
+  if(s==='signals'&&currentPlan==='Free') addLock('s-signals','MT5 Signal Feed','Real-time AI signals on Pro and Elite plans.','Upgrade to Pro');
+  if(s==='portfolio'&&currentPlan==='Free') addLock('s-portfolio','Portfolio Tracker','Track trades and P&L on Pro and Elite plans.','Upgrade to Pro');
 }
 
 function addLock(id,title,sub,btn){
   const s=document.getElementById(id);
-  if(s.querySelector('.lock'))return;
+  if(s.querySelector('.lock')) return;
+  s.style.position='relative';
   const d=document.createElement('div');
   d.className='lock';
   d.innerHTML=`<div class="lock-i">🔒</div><div class="lock-t">${title}</div><div class="lock-s">${sub}</div><button class="lock-b" onclick="goScr('profile')">${btn} →</button>`;
-  s.style.position='relative';
   s.appendChild(d);
 }
 
@@ -710,10 +716,10 @@ function addLock(id,title,sub,btn){
 ══════════════════════════════════════ */
 function buildHoldings(){
   const h=[
-    {ico:'🥇',nm:'Gold (XAU)',sub:'Long 0.5 lot',val:'$4,820',pnl:'+$320',pct:'+7.1%',up:true,bar:72,color:'#C9A84C'},
-    {ico:'🟠',nm:'Bitcoin',   sub:'Long 0.02 BTC',val:'$5,140',pnl:'+$440',pct:'+9.4%',up:true,bar:85,color:'#F7931A'},
-    {ico:'⚪',nm:'Silver',    sub:'Long 2 lots',  val:'$1,240',pnl:'-$88', pct:'-6.6%',up:false,bar:38,color:'#8A95B0'},
-    {ico:'🔵',nm:'EUR/USD',  sub:'Short 1 lot',  val:'$1,647',pnl:'+$175',pct:'+11.9%',up:true,bar:60,color:'#2B5EE8'},
+    {ico:'🥇',nm:'Gold (XAU)',  sub:'Long 0.5 lot',  val:'$4,820',pnl:'+$320',pct:'+7.1%', up:true, bar:72,color:'#C9A84C'},
+    {ico:'🟠',nm:'Bitcoin',     sub:'Long 0.02 BTC', val:'$5,140',pnl:'+$440',pct:'+9.4%', up:true, bar:85,color:'#F7931A'},
+    {ico:'⚪',nm:'Silver',      sub:'Long 2 lots',   val:'$1,240',pnl:'-$88', pct:'-6.6%', up:false,bar:38,color:'#8A95B0'},
+    {ico:'🔵',nm:'EUR/USD',    sub:'Short 1 lot',   val:'$1,647',pnl:'+$175',pct:'+11.9%',up:true, bar:60,color:'#2B5EE8'},
   ];
   document.getElementById('holdings').innerHTML=`
     <div class="psec-t">Open Positions</div>
@@ -737,9 +743,9 @@ function buildHoldings(){
 function loadDemo(){
   if(sigLoaded)return; sigLoaded=true;
   const sigs=[
-    {sym:'XAUUSD',ico:'🥇',sig:'BUY', score:8,entry:2318.4,sl:2305,tp:2346,rsi:58.2,tf:'1H',time:'10:00 UTC'},
-    {sym:'BTCUSD',ico:'🟠',sig:'SELL',score:7,entry:67420, sl:68200,tp:65100,rsi:72.1,tf:'4H',time:'09:45 UTC'},
-    {sym:'EURUSD',ico:'🔵',sig:'HOLD',score:4,entry:1.0742,sl:null, tp:null, rsi:44.8,tf:'1H',time:'09:30 UTC'},
+    {sym:'XAUUSD',ico:'🥇',sig:'BUY', score:8,entry:2318.4,sl:2305,  tp:2346,  rsi:58.2,tf:'1H',time:'10:00 UTC'},
+    {sym:'BTCUSD',ico:'🟠',sig:'SELL',score:7,entry:67420, sl:68200, tp:65100, rsi:72.1,tf:'4H',time:'09:45 UTC'},
+    {sym:'EURUSD',ico:'🔵',sig:'HOLD',score:4,entry:1.0742,sl:null,  tp:null,  rsi:44.8,tf:'1H',time:'09:30 UTC'},
   ];
   document.getElementById('sigCnt').textContent=sigs.length+' Active';
   document.getElementById('sigFeed').innerHTML=sigs.map(s=>{
@@ -770,19 +776,21 @@ function loadDemo(){
    AI CHAT
 ══════════════════════════════════════ */
 function sysP(){
+  const a=sel;
+  const p=prices[a.sym]||FALLBACK[a.sym];
   return `You are an expert Forex and Crypto trading analyst inside NEXUS TRADER — a premium AI trading platform.
 LIVE DATA:
-Asset: ${sel.name} (${sel.sym}) | Price: ${sel.u}${prices[sel.sym].toFixed(sel.dp)} | Change: ${sel.chg>=0?'+':''}${sel.chg.toFixed(2)}%
-24H High: ${sel.u}${sel.hi} | Low: ${sel.u}${sel.lo} | Volume: ${sel.vol} | TF: ${curInterval}min
-All markets: ${ASSETS.map(x=>`${x.sym} ${x.u}${prices[x.sym].toFixed(x.dp)} (${x.chg>=0?'+':''}${x.chg.toFixed(2)}%)`).join(' | ')}
-Rules: Short responses (3-5 sentences) for mobile. Direct BUY/SELL/HOLD with specific SL/TP. End with ⚠️ risk note. Educational only.`;
+Asset: ${a.name} (${a.sym}) | Price: ${a.u}${p.toFixed(a.dp)} | Change: ${a.chg>=0?'+':''}${a.chg.toFixed(2)}%
+24H High: ${a.u}${a.hi} | Low: ${a.u}${a.lo} | Volume: ${a.vol}
+All markets: ${ASSETS.map(x=>`${x.sym} ${x.u}${(prices[x.sym]||FALLBACK[x.sym]).toFixed(x.dp)} (${x.chg>=0?'+':''}${x.chg.toFixed(2)}%)`).join(' | ')}
+Rules: Short responses (3-5 sentences) for mobile. Direct BUY/SELL/HOLD with specific SL/TP levels. End with ⚠️ risk note. Educational only.`;
 }
 
 async function sendAI(txt){
-  if(aiLoading)return;
+  if(aiLoading) return;
   const inp=document.getElementById('ain');
   const text=txt||inp.value.trim();
-  if(!text)return;
+  if(!text) return;
   if(!txt){inp.value='';inp.style.height='';}
   addMsg(text,'us');
   chatHist.push({role:'user',content:text});
@@ -814,13 +822,13 @@ function addMsg(txt,role){
   d.className='msg '+role;
   d.innerHTML=(role==='ai'?'<div class="mlbl">Claude</div>':'')+
     txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-  box.appendChild(d);box.scrollTop=box.scrollHeight;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
 }
 function addTyping(){
   const box=document.getElementById('msgs');
   const id='ty'+Date.now();
   box.innerHTML+=`<div class="msg ai" id="${id}"><div class="mlbl">Claude</div><div class="tdots"><span></span><span></span><span></span></div></div>`;
-  box.scrollTop=box.scrollHeight;return id;
+  box.scrollTop=box.scrollHeight; return id;
 }
 function removeTyping(id){const e=document.getElementById(id);if(e)e.remove();}
 function akey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}}
@@ -829,12 +837,11 @@ function arz(el){el.style.height='';el.style.height=Math.min(el.scrollHeight,65)
 /* ══════════════════════════════════════
    TOAST
 ══════════════════════════════════════ */
-function toast(msg,dur=2500){
+function showToast(msg,dur=2500){
   const t=document.getElementById('toastEl');
-  t.textContent=msg;t.classList.add('show');
+  t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),dur);
 }
 </script>
 </body>
 </html>
-

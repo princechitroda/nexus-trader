@@ -459,7 +459,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
    ASSETS — correct TradingView symbols
 ══════════════════════════════════════ */
 const ASSETS = [
-  {sym:'XAU/USD', name:'Gold',    tv:'OANDA:XAUUSD',    cls:'cgold', chg:-0.42, hi:2332,   lo:2305,   vol:'$198B', spread:0.35,   u:'$', dp:2},
+  {sym:'XAU/USD', name:'Gold',    tv:'OANDA:XAUUSD',    cls:'cgold', chg:0.42,  hi:4095,   lo:4065,   vol:'$198B', spread:0.35,   u:'$', dp:2},
   {sym:'BTC/USD', name:'Bitcoin', tv:'BINANCE:BTCUSDT',  cls:'cbtc',  chg:2.34,  hi:68200,  lo:65800,  vol:'$42B',  spread:12.5,   u:'$', dp:2},
   {sym:'XAG/USD', name:'Silver',  tv:'OANDA:XAGUSD',    cls:'csil',  chg:0.87,  hi:30.12,  lo:29.45,  vol:'$8B',   spread:0.04,   u:'$', dp:3},
   {sym:'EUR/USD', name:'Euro',    tv:'OANDA:EURUSD',    cls:'cblue', chg:-0.18, hi:1.0789, lo:1.0718, vol:'$280B', spread:0.0001, u:'',  dp:4},
@@ -469,7 +469,7 @@ const ASSETS = [
 
 // Live prices fetched from TradingView widget events or fallback
 const FALLBACK = {
-  'XAU/USD':2320,'BTC/USD':67420,'XAG/USD':29.84,
+  'XAU/USD':4080,'BTC/USD':67420,'XAG/USD':29.84,
   'EUR/USD':1.0742,'GBP/USD':1.2698,'USD/JPY':157.42
 };
 let prices = {...FALLBACK};
@@ -537,6 +537,8 @@ function launch(){
   updateStats();
   buildHoldings();
   loadTV(sel.tv);
+  fetchLiveGold();
+  setInterval(fetchLiveGold,10000);
   setInterval(tickSim,2500);
 }
 
@@ -616,7 +618,7 @@ function buildStrip(){
   document.getElementById('astrip').innerHTML=ASSETS.map((a,i)=>{
     const p=prices[a.sym]||FALLBACK[a.sym];
     const ch=a.chg;
-    return `<div class="ac${i===0?' on':''}" id="ac_${i}" onclick="pickA(${i})">
+    return `<div class="ac${a.sym===sel.sym?' on':''}" id="ac_${i}" onclick="pickA(${i})">
       <div class="ac-s ${a.cls}">${a.sym.split('/')[0]}</div>
       <div class="ac-p">${a.u}${p.toFixed(a.dp)}</div>
       <div class="ac-c ${ch>=0?'up':'dn'}">${ch>=0?'▲':'▼'}${Math.abs(ch).toFixed(2)}%</div>
@@ -696,9 +698,9 @@ function goScr(s){
   const nv=document.getElementById('nv-'+s);
   if(nv) nv.classList.add('on');
 
-  if(s==='ai'&&currentPlan==='Free') addLock('s-ai','Claude AI Analyst','Upgrade to Pro for unlimited AI analysis and trade signals.','Upgrade to Pro');
-  if(s==='signals'&&currentPlan==='Free') addLock('s-signals','MT5 Signal Feed','Real-time AI signals on Pro and Elite plans.','Upgrade to Pro');
-  if(s==='portfolio'&&currentPlan==='Free') addLock('s-portfolio','Portfolio Tracker','Track trades and P&L on Pro and Elite plans.','Upgrade to Pro');
+  // AI unlocked for all users
+  // Signals unlocked for all users
+  // Portfolio unlocked for all users
 }
 
 function addLock(id,title,sub,btn){
@@ -743,7 +745,7 @@ function buildHoldings(){
 function loadDemo(){
   if(sigLoaded)return; sigLoaded=true;
   const sigs=[
-    {sym:'XAUUSD',ico:'🥇',sig:'BUY', score:8,entry:2318.4,sl:2305,  tp:2346,  rsi:58.2,tf:'1H',time:'10:00 UTC'},
+    {sym:'XAUUSD',ico:'🥇',sig:'BUY', score:8,entry:prices['XAU/USD']||4080,sl:(prices['XAU/USD']||4080)-35,tp:(prices['XAU/USD']||4080)+65,rsi:58.2,tf:'1H',time:'10:00 UTC'},
     {sym:'BTCUSD',ico:'🟠',sig:'SELL',score:7,entry:67420, sl:68200, tp:65100, rsi:72.1,tf:'4H',time:'09:45 UTC'},
     {sym:'EURUSD',ico:'🔵',sig:'HOLD',score:4,entry:1.0742,sl:null,  tp:null,  rsi:44.8,tf:'1H',time:'09:30 UTC'},
   ];
@@ -842,6 +844,24 @@ function showToast(msg,dur=2500){
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),dur);
 }
+
+/* LIVE GOLD PRICE FROM SERVER */
+async function fetchLiveGold(){
+  try{
+    const API_KEY='6f127f83a2db4b1686d2926a7f35049f';
+    const r=await fetch('https://api.twelvedata.com/price?symbol=XAU/USD&apikey='+API_KEY);
+    const d=await r.json();
+    if(d.price){
+      const p=parseFloat(parseFloat(d.price).toFixed(2));
+      prices['XAU/USD']=p;
+      const gold=ASSETS.find(a=>a.sym==='XAU/USD');
+      if(gold){ gold.hi=Math.max(gold.hi,p); gold.lo=Math.min(gold.lo,p); }
+      buildStrip(); buildTicker();
+      if(sel.sym==='XAU/USD') updateCH();
+    }
+  }catch(e){ console.log('Price fetch error:',e); }
+}
+
 </script>
 </body>
 </html>

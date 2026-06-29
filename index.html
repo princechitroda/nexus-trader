@@ -1121,8 +1121,7 @@ const RAILWAY_URL='https://nexus-trader-production-0fb3.up.railway.app';
 function initBot(){
   buildStratGrid();
   document.getElementById('hookUrl').textContent=RAILWAY_URL+'/webhook';
-  fetchLiveSignal();
-  setInterval(fetchLiveSignal,30000);
+  try{fetchLiveSignal();setInterval(fetchLiveSignal,30000);}catch(e){}
 }
 
 async function fetchLiveSignal(){
@@ -1145,10 +1144,10 @@ async function fetchLiveSignal(){
     document.getElementById('sigReason').textContent=s.reasoning||'—';
     document.getElementById('sigConfBar').style.width=(s.confidence||0)+'%';
     if(s.ts){var d=new Date(s.ts);document.getElementById('sigTime').textContent='Updated: '+d.toLocaleTimeString();}
-  }catch(e){console.log('Signal fetch:',e);}
+  }catch(e){console.log('Signal error:',e);}
 }
 
-/* ═══ TOAST ═══ */
+
 function showToast(msg,dur){
   dur=dur||2500;var t=document.getElementById('toastEl');
   t.textContent=msg;t.classList.add('show');

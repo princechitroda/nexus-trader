@@ -203,6 +203,15 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .lock-b{padding:10px 24px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#08090E;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;cursor:pointer}
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:9px 16px;font-size:11px;font-family:'Syne',sans-serif;font-weight:600;color:var(--platinum);z-index:999;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.key-card{margin:16px;padding:18px;background:var(--bg3);border:1px solid var(--gold3);border-radius:14px;display:flex;flex-direction:column;gap:12px}
+.key-title{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px}
+.key-sub{font-size:11px;color:var(--silver);line-height:1.6}
+.key-inp{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;color:var(--platinum);font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px 12px;outline:none;width:100%;transition:border-color .15s}
+.key-inp:focus{border-color:var(--gold)}
+.key-inp::placeholder{color:var(--muted)}
+.key-btn{padding:11px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#08090E;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;cursor:pointer}
+.key-link{font-size:10px;color:var(--muted);text-align:center}
+.key-link a{color:var(--gold);text-decoration:none}
 ::-webkit-scrollbar{width:2px;height:2px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
@@ -303,10 +312,18 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
           <div class="qc" onclick="qa('Compare Gold BTC and NVIDIA right now')">⚖️ Compare</div>
         </div>
       </div>
+      <!-- API KEY CARD -->
+      <div class="key-card" id="keyCard" style="display:none">
+        <div class="key-title">🔑 Enter Anthropic API Key</div>
+        <div class="key-sub">Your key is saved only in your browser (localStorage). Never shared with anyone. Get a free key at console.anthropic.com</div>
+        <input class="key-inp" id="keyInp" type="password" placeholder="sk-ant-api03-...">
+        <button class="key-btn" onclick="saveAIKey()">Save Key & Start Chatting →</button>
+        <div class="key-link"><a href="https://console.anthropic.com/settings/keys" target="_blank">Get free API key →</a></div>
+      </div>
       <div class="msgs" id="msgs">
         <div class="msg ai"><div class="mlbl">Claude</div>Welcome to NEXUS TRADER. I have live data for 33 assets across 7 markets. Ask me anything — analysis, signals, SL/TP, or risk management. 📊</div>
       </div>
-      <div class="ai-bar">
+      <div class="ai-bar" id="aiBar">
         <textarea class="ain" id="ain" placeholder="Ask about any market…" rows="1" onkeydown="akey(event)" oninput="arz(this)"></textarea>
         <button class="sbtn" id="sbtn" onclick="sendAI()">➤</button>
       </div>
@@ -411,7 +428,7 @@ const ASSETS=[
   {sym:'USD/JPY',disp:'JPY',name:'Dollar/Yen',     cat:'Forex',      tv:'FX:USDJPY',        td:'USD/JPY', cls:'cred',  u:'',  dp:3, price:157.42, chg:-0.31,hi:157.89,lo:156.9, vol:'$210B',spread:'0.009'},
   {sym:'AUD/USD',disp:'AUD',name:'Aussie/Dollar',  cat:'Forex',      tv:'FX:AUDUSD',        td:'AUD/USD', cls:'cgold', u:'',  dp:4, price:0.6521, chg:0.15, hi:0.6545,lo:0.6498,vol:'$80B', spread:'0.0002'},
   // CRYPTO
-  {sym:'BTC/USD',disp:'BTC', name:'Bitcoin',       cat:'Crypto',     tv:'BINANCE:BTCUSDT',  td:'BTC/USD', cls:'cbtc',  u:'$', dp:2, price:67420,  chg:2.34, hi:68200, lo:65800, vol:'$42B', spread:'12.5'},
+  {sym:'BTC/USD',disp:'BTC', name:'Bitcoin',       cat:'Crypto',     tv:'BINANCE:BTCUSDT',  td:'BTC/USD', cls:'cbtc',  u:'$', dp:2, price:59870,  chg:2.34, hi:60500, lo:58800, vol:'$42B', spread:'12.5'},
   {sym:'ETH/USD',disp:'ETH', name:'Ethereum',      cat:'Crypto',     tv:'BINANCE:ETHUSDT',  td:'ETH/USD', cls:'cblue', u:'$', dp:2, price:3520,   chg:1.85, hi:3580,  lo:3450,  vol:'$18B', spread:'1.2'},
   {sym:'SOL/USD',disp:'SOL', name:'Solana',        cat:'Crypto',     tv:'BINANCE:SOLUSDT',  td:'SOL/USD', cls:'cgreen',u:'$', dp:2, price:148,    chg:3.21, hi:152,   lo:143,   vol:'$4B',  spread:'0.05'},
   {sym:'XRP/USD',disp:'XRP', name:'XRP',           cat:'Crypto',     tv:'BINANCE:XRPUSDT',  td:'XRP/USD', cls:'cblue', u:'$', dp:4, price:0.5842, chg:-0.45,hi:0.601, lo:0.571, vol:'$2B',  spread:'0.0002'},
@@ -423,14 +440,14 @@ const ASSETS=[
   {sym:'MSFT',   disp:'MSFT',name:'Microsoft',     cat:'Stocks',     tv:'NASDAQ:MSFT',      td:'MSFT',    cls:'cblue', u:'$', dp:2, price:415.20, chg:0.82, hi:418,   lo:411,   vol:'$10B', spread:'0.01'},
   {sym:'AMZN',   disp:'AMZN',name:'Amazon',        cat:'Stocks',     tv:'NASDAQ:AMZN',      td:'AMZN',    cls:'cgold', u:'$', dp:2, price:192.40, chg:1.15, hi:195,   lo:189,   vol:'$9B',  spread:'0.01'},
   // INDICES
-  {sym:'US30',   disp:'US30',name:'Dow Jones',     cat:'Indices',    tv:'OANDA:US30USD',           td:'',        cls:'cblue', u:'',  dp:0, price:42580,  chg:0.45, hi:42800, lo:42200, vol:'$820B',spread:'2'},
-  {sym:'US500',  disp:'S&P', name:'S&P 500',       cat:'Indices',    tv:'OANDA:SPX500USD',           td:'',        cls:'cgreen',u:'',  dp:0, price:5820,   chg:0.62, hi:5850,  lo:5780,  vol:'$450B',spread:'0.5'},
-  {sym:'NAS100', disp:'NAS', name:'Nasdaq 100',    cat:'Indices',    tv:'OANDA:NAS100USD',       td:'',        cls:'cbtc',  u:'',  dp:0, price:20450,  chg:0.88, hi:20600, lo:20200, vol:'$320B',spread:'1'},
+  {sym:'US30',   disp:'US30',name:'Dow Jones',     cat:'Indices',    tv:'OANDA:US30USD',           td:'',        cls:'cblue', u:'',  dp:0, price:42564,  chg:0.45, hi:42800, lo:42200, vol:'$820B',spread:'2'},
+  {sym:'US500',  disp:'S&P', name:'S&P 500',       cat:'Indices',    tv:'OANDA:SPX500USD',           td:'',        cls:'cgreen',u:'',  dp:0, price:5818,   chg:0.62, hi:5850,  lo:5780,  vol:'$450B',spread:'0.5'},
+  {sym:'NAS100', disp:'NAS', name:'Nasdaq 100',    cat:'Indices',    tv:'OANDA:NAS100USD',       td:'',        cls:'cbtc',  u:'',  dp:0, price:20447,  chg:0.88, hi:20600, lo:20200, vol:'$320B',spread:'1'},
   {sym:'DAX40',  disp:'DAX', name:'DAX 40',        cat:'Indices',    tv:'OANDA:DE30EUR',         td:'',        cls:'cred',  u:'',  dp:0, price:19820,  chg:-0.24,hi:19950, lo:19700, vol:'$180B',spread:'1'},
   {sym:'FTSE100',disp:'FTSE',name:'FTSE 100',      cat:'Indices',    tv:'OANDA:UK100GBP',    td:'',        cls:'csil',  u:'',  dp:0, price:8420,   chg:0.18, hi:8460,  lo:8380,  vol:'$95B', spread:'0.5'},
   // COMMODITIES
   {sym:'XAU/USD',disp:'GOLD',name:'Gold',          cat:'Commodities',tv:'OANDA:XAUUSD',     td:'XAU/USD', cls:'cgold', u:'$', dp:2, price:4080,   chg:0.42, hi:4095,  lo:4065,  vol:'$198B',spread:'0.35'},
-  {sym:'XAG/USD',disp:'SILV',name:'Silver',        cat:'Commodities',tv:'OANDA:XAGUSD',     td:'XAG/USD', cls:'csil',  u:'$', dp:3, price:29.84,  chg:0.87, hi:30.12, lo:29.45, vol:'$8B',  spread:'0.04'},
+  {sym:'XAG/USD',disp:'SILV',name:'Silver',        cat:'Commodities',tv:'OANDA:XAGUSD',     td:'XAG/USD', cls:'csil',  u:'$', dp:3, price:58.08,  chg:0.87, hi:58.50, lo:57.60, vol:'$8B',  spread:'0.04'},
   {sym:'WTI',    disp:'WTI', name:'Crude Oil WTI', cat:'Commodities',tv:'OANDA:WTICOUSD',        td:'',        cls:'cred',  u:'$', dp:2, price:78.45,  chg:-0.32,hi:79.2,  lo:77.8,  vol:'$65B', spread:'0.02'},
   {sym:'BRENT',  disp:'BRENT',name:'Brent Oil',    cat:'Commodities',tv:'OANDA:BCOUSD',        td:'',        cls:'cred',  u:'$', dp:2, price:82.10,  chg:-0.28,hi:82.9,  lo:81.3,  vol:'$70B', spread:'0.02'},
   {sym:'NATGAS', disp:'GAS', name:'Natural Gas',   cat:'Commodities',tv:'OANDA:NATGASUSD',       td:'',        cls:'cblue', u:'$', dp:3, price:2.845,  chg:1.24, hi:2.89,  lo:2.78,  vol:'$12B', spread:'0.002'},
@@ -692,6 +709,7 @@ function goScr(s){
   document.getElementById('s-'+s).classList.add('on');
   var nv=document.getElementById('nv-'+s);if(nv)nv.classList.add('on');
   if(s==='chart')loadTV(sel.tv);
+  if(s==='ai')checkKeyUI();
   if(s==='signals')loadDemo();
   if(s==='portfolio')buildHoldings();
 }
@@ -735,15 +753,23 @@ function sysP(){
   var mkt=ASSETS.slice(0,10).map(function(a){return a.sym+' '+a.u+(prices[a.sym]||a.price).toFixed(a.dp)+' ('+(a.chg>=0?'+':'')+a.chg.toFixed(2)+'%)';}).join(' | ');
   return 'You are an expert trading analyst inside NEXUS TRADER AI — a professional trading platform.\n\nLIVE DATA:\nSelected: '+sel.name+' ('+sel.sym+') | Price: '+sel.u+(prices[sel.sym]||sel.price).toFixed(sel.dp)+' | Chg: '+(sel.chg>=0?'+':'')+sel.chg.toFixed(2)+'%\nHigh: '+sel.hi+' | Low: '+sel.lo+'\nMarkets: '+mkt+'\n\nRules:\n- Be concise (3-6 sentences)\n- Give direct BUY/SELL/HOLD with exact SL and TP levels\n- End with a risk reminder\n- User plan: '+currentPlan;
 }
+function saveAIKey(){
+  var k=document.getElementById('keyInp').value.trim();
+  if(!k){showToast('Please enter your API key');return;}
+  localStorage.setItem('nexus_claude_key',k);
+  document.getElementById('keyCard').style.display='none';
+  document.getElementById('aiBar').style.display='flex';
+  showToast('✅ API key saved!');
+}
+function checkKeyUI(){
+  var hasKey=!!localStorage.getItem('nexus_claude_key');
+  document.getElementById('keyCard').style.display=hasKey?'none':'flex';
+  document.getElementById('aiBar').style.display=hasKey?'flex':'none';
+}
 async function sendAI(txt){
   if(aiLoading)return;
   var apiKey=localStorage.getItem('nexus_claude_key')||'';
-  if(!apiKey){
-    var k=prompt('Enter your Anthropic API key to use Claude AI:\n(Get it free at console.anthropic.com)');
-    if(!k){return;}
-    localStorage.setItem('nexus_claude_key',k.trim());
-    apiKey=k.trim();
-  }
+  if(!apiKey){checkKeyUI();return;}
   var inp=document.getElementById('ain');
   var text=txt||inp.value.trim();if(!text)return;
   if(!txt){inp.value='';inp.style.height='';}
@@ -767,7 +793,8 @@ async function sendAI(txt){
     }else if(data.error){
       if(data.error.type==='authentication_error'){
         localStorage.removeItem('nexus_claude_key');
-        appendM('⚠️ Invalid API key. Click AI again to re-enter.','ai');
+        appendM('⚠️ Invalid API key. Please enter a valid key below.','ai');
+        checkKeyUI();
       }else{
         appendM('⚠️ Error: '+data.error.message,'ai');
       }

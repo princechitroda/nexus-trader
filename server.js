@@ -272,6 +272,16 @@ app.get('/dashboard', (req, res) => {
   res.json({ mt5: mtStatus, signal: cachedSignal, trades: tradeLog.slice(0,20) });
 });
 
+// Alias routes (handle trailing slash and alternate paths)
+app.get('/signal', async (req, res) => {
+  const { key, sym } = req.query;
+  if (key !== BOT_KEY) return res.status(401).json({ error: 'Invalid API key' });
+  try {
+    const signal = await generateSmartSignal(sym || 'XAUUSD');
+    res.json(signal);
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
 // Health check
 app.get('/', (req, res) => {
   res.json({ status: 'NEXUS TRADER Server v3.0 LIVE', signal: cachedSignal.signal, price: cachedSignal.price });

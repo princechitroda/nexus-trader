@@ -238,6 +238,8 @@ app.get('/price', async (req, res) => {
 app.get('/webhook/signal', async (req, res) => {
   const { key, sym } = req.query;
   if (key !== BOT_KEY) return res.status(401).json({ error: 'Invalid API key' });
+  // If bot disabled from NEXUS, return HOLD
+  if (!botEnabled) return res.json({ signal: 'HOLD', confidence: 0, reasoning: 'Bot disabled from NEXUS TRADER', strategy: 'DISABLED', ts: Date.now() });
   try {
     const signal = await generateSmartSignal(sym || 'XAUUSD');
     res.json(signal);
@@ -260,7 +262,15 @@ app.post('/webhook/status', (req, res) => {
 app.post('/webhook/trade', (req, res) => {
   const { key, action, symbol, price, lot, status, balance } = req.body;
   if (key !== BOT_KEY) return res.status(401).json({ error: 'Invalid key' });
-  const trade = { action, symbol, price, lot, status, balance, ts: Date.now() };
+  const pnl = parseFloat(req.body.pnl || 0);
+  const trade = { action, symbol, price, lot, status, balance, pnl, ts: Date.now() };
+  // Update stats
+  if(status === 'CLOSED') {
+    botStats.totalTrades++;
+    if(pnl > 0) botStats.wins++;
+    else botStats.losses++;
+    botStats.totalPnl = parseFloat((botStats.totalPnl + pnl).toFixed(2));
+  }
   tradeLog.unshift(trade);
   if (tradeLog.length > 100) tradeLog.pop();
   console.log(`💰 Trade: ${action} ${symbol} @ ${price} | ${status}`);
@@ -269,7 +279,7 @@ app.post('/webhook/trade', (req, res) => {
 
 // GET /dashboard — full status
 app.get('/dashboard', (req, res) => {
-  res.json({ mt5: mtStatus, signal: cachedSignal, trades: tradeLog.slice(0,20) });
+  res.json({ mt5: mtStatus, signal: cachedSignal, trades: tradeLog.slice(0,20), botEnabled, stats: botStats });
 });
 
 // Alias routes (handle trailing slash and alternate paths)
@@ -280,6 +290,23 @@ app.get('/signal', async (req, res) => {
     const signal = await generateSmartSignal(sym || 'XAUUSD');
     res.json(signal);
   } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+
+// POST /bot/control — NEXUS TRADER turns bot ON/OFF
+app.post('/bot/control', (req, res) => {
+  const { key, enabled } = req.body;
+  if (key !== BOT_KEY) return res.status(401).json({ error: 'Invalid key' });
+  botEnabled = enabled === true || enabled === 'true';
+  console.log(`🤖 Bot ${botEnabled ? 'ENABLED' : 'DISABLED'} from NEXUS TRADER`);
+  res.json({ ok: true, botEnabled });
+});
+
+// GET /bot/status — MT5 EA checks if bot should trade
+app.get('/bot/status', (req, res) => {
+  const { key } = req.query;
+  if (key !== BOT_KEY) return res.status(401).json({ error: 'Invalid key' });
+  res.json({ botEnabled, signal: cachedSignal.signal, ts: Date.now() });
 });
 
 // Health check

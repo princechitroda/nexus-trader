@@ -429,6 +429,49 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
             <div class="risk-item"><div class="risk-l">Take Profit (pts)</div><input class="risk-inp" id="rTP" type="number" value="650" min="50"></div>
           </div>
         </div>
+        <!-- LIVE AI SIGNAL CARD -->
+        <div class="bot-sec" style="margin-top:10px">
+          <div class="bot-sec-t">🤖 Live Claude AI Signal</div>
+          <div id="liveSignalCard" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:4px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="sigBadge" style="padding:4px 14px;border-radius:6px;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;background:var(--border);color:var(--muted)">—</div>
+                <div>
+                  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px" id="sigSym">XAUUSD</div>
+                  <div style="font-size:9px;color:var(--muted)" id="sigStrat">Loading...</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700" id="sigPrice">—</div>
+                <div style="font-size:9px;color:var(--muted)" id="sigTime">—</div>
+              </div>
+            </div>
+            <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden">
+              <div id="sigConfBar" style="height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--green));width:0%;transition:width 1s"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+              <div style="flex:1;background:var(--bg2);border-radius:6px;padding:7px;text-align:center">
+                <div style="font-size:8px;color:var(--muted);font-family:'Syne',sans-serif;margin-bottom:2px">CONFIDENCE</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700" id="sigConf">—</div>
+              </div>
+              <div style="flex:1;background:var(--bg2);border-radius:6px;padding:7px;text-align:center">
+                <div style="font-size:8px;color:var(--muted);font-family:'Syne',sans-serif;margin-bottom:2px">STOP LOSS</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--red)" id="sigSL">—</div>
+              </div>
+              <div style="flex:1;background:var(--bg2);border-radius:6px;padding:7px;text-align:center">
+                <div style="font-size:8px;color:var(--muted);font-family:'Syne',sans-serif;margin-bottom:2px">TAKE PROFIT</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--green)" id="sigTP">—</div>
+              </div>
+              <div style="flex:1;background:var(--bg2);border-radius:6px;padding:7px;text-align:center">
+                <div style="font-size:8px;color:var(--muted);font-family:'Syne',sans-serif;margin-bottom:2px">RSI</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700" id="sigRSI">—</div>
+              </div>
+            </div>
+            <div style="background:var(--bg2);border-radius:8px;padding:9px 11px;font-size:10px;color:var(--silver);line-height:1.6" id="sigReason">Fetching Claude AI analysis...</div>
+          </div>
+          <div style="font-size:9px;color:var(--muted);padding:4px 2px">🔄 Updates every 5 minutes · Powered by Claude AI + Live Market Data</div>
+        </div>
+
         <div class="bot-sec">
           <div class="bot-sec-t">24H Performance</div>
           <div class="perf-row">
@@ -1073,10 +1116,36 @@ function copyHook(){
   navigator.clipboard.writeText(url).then(function(){showToast('✅ Webhook URL copied!');});
 }
 
+const RAILWAY_URL='https://nexus-trader-production-0fb3.up.railway.app';
+
 function initBot(){
   buildStratGrid();
-  // Set demo webhook URL
-  document.getElementById('hookUrl').textContent='https://nexus-trader-api.railway.app/webhook';
+  document.getElementById('hookUrl').textContent=RAILWAY_URL+'/webhook';
+  fetchLiveSignal();
+  setInterval(fetchLiveSignal,30000);
+}
+
+async function fetchLiveSignal(){
+  try{
+    var r=await fetch(RAILWAY_URL+'/signal/latest');
+    var s=await r.json();
+    if(!s||!s.signal)return;
+    var badge=document.getElementById('sigBadge');
+    badge.textContent=s.signal;
+    badge.style.background=s.signal==='BUY'?'var(--green3)':s.signal==='SELL'?'var(--red3)':'var(--gold3)';
+    badge.style.color=s.signal==='BUY'?'var(--green)':s.signal==='SELL'?'var(--red)':'var(--gold)';
+    badge.style.border=s.signal==='BUY'?'1px solid rgba(0,229,160,.3)':s.signal==='SELL'?'1px solid rgba(255,69,96,.3)':'1px solid rgba(201,168,76,.3)';
+    document.getElementById('sigPrice').textContent=s.price?'$'+parseFloat(s.price).toFixed(2):'—';
+    document.getElementById('sigConf').textContent=s.confidence?s.confidence+'%':'—';
+    document.getElementById('sigSL').textContent=s.sl?'$'+parseFloat(s.sl).toFixed(2):'—';
+    document.getElementById('sigTP').textContent=s.tp?'$'+parseFloat(s.tp).toFixed(2):'—';
+    document.getElementById('sigRSI').textContent=s.rsi?parseFloat(s.rsi).toFixed(1):'—';
+    document.getElementById('sigStrat').textContent=s.strategy||'Claude AI';
+    document.getElementById('sigSym').textContent=s.symbol||'XAUUSD';
+    document.getElementById('sigReason').textContent=s.reasoning||'—';
+    document.getElementById('sigConfBar').style.width=(s.confidence||0)+'%';
+    if(s.ts){var d=new Date(s.ts);document.getElementById('sigTime').textContent='Updated: '+d.toLocaleTimeString();}
+  }catch(e){console.log('Signal fetch:',e);}
 }
 
 /* ═══ TOAST ═══ */

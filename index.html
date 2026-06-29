@@ -388,7 +388,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
           <div class="prow"><div class="prow-i">🔔</div><div><div class="prow-t">Notifications</div><div class="prow-s">Signal alerts and price alerts</div></div><div class="prow-a">›</div></div>
           <div class="prow"><div class="prow-i">🔗</div><div><div class="prow-t">MT5 Connection</div><div class="prow-s">Connect your MetaTrader account</div></div><div class="prow-a">›</div></div>
           <div class="prow"><div class="prow-i">🛡</div><div><div class="prow-t">Risk Settings</div><div class="prow-s">Max risk per trade, daily limits</div></div><div class="prow-a">›</div></div>
-          <div class="prow"><div class="prow-i">🔑</div><div><div class="prow-t">API Keys</div><div class="prow-s">Claude, Twelve Data, MT5</div></div><div class="prow-a">›</div></div>
+          <div class="prow" onclick="resetAIKey()"><div class="prow-i">🔑</div><div><div class="prow-t">Claude API Key</div><div class="prow-s">Tap to update your Anthropic API key</div></div><div class="prow-a">›</div></div>
         </div>
         <button class="lgbtn" onclick="doLogout()">Sign Out</button>
       </div>
@@ -423,17 +423,17 @@ const ASSETS=[
   {sym:'MSFT',   disp:'MSFT',name:'Microsoft',     cat:'Stocks',     tv:'NASDAQ:MSFT',      td:'MSFT',    cls:'cblue', u:'$', dp:2, price:415.20, chg:0.82, hi:418,   lo:411,   vol:'$10B', spread:'0.01'},
   {sym:'AMZN',   disp:'AMZN',name:'Amazon',        cat:'Stocks',     tv:'NASDAQ:AMZN',      td:'AMZN',    cls:'cgold', u:'$', dp:2, price:192.40, chg:1.15, hi:195,   lo:189,   vol:'$9B',  spread:'0.01'},
   // INDICES
-  {sym:'US30',   disp:'US30',name:'Dow Jones',     cat:'Indices',    tv:'DJ:DJI',           td:'',        cls:'cblue', u:'',  dp:0, price:42580,  chg:0.45, hi:42800, lo:42200, vol:'$820B',spread:'2'},
-  {sym:'US500',  disp:'S&P', name:'S&P 500',       cat:'Indices',    tv:'SP:SPX',           td:'',        cls:'cgreen',u:'',  dp:0, price:5820,   chg:0.62, hi:5850,  lo:5780,  vol:'$450B',spread:'0.5'},
-  {sym:'NAS100', disp:'NAS', name:'Nasdaq 100',    cat:'Indices',    tv:'NASDAQ:NDX',       td:'',        cls:'cbtc',  u:'',  dp:0, price:20450,  chg:0.88, hi:20600, lo:20200, vol:'$320B',spread:'1'},
-  {sym:'DAX40',  disp:'DAX', name:'DAX 40',        cat:'Indices',    tv:'XETR:DAX',         td:'',        cls:'cred',  u:'',  dp:0, price:19820,  chg:-0.24,hi:19950, lo:19700, vol:'$180B',spread:'1'},
-  {sym:'FTSE100',disp:'FTSE',name:'FTSE 100',      cat:'Indices',    tv:'SPREADEX:FTSE',    td:'',        cls:'csil',  u:'',  dp:0, price:8420,   chg:0.18, hi:8460,  lo:8380,  vol:'$95B', spread:'0.5'},
+  {sym:'US30',   disp:'US30',name:'Dow Jones',     cat:'Indices',    tv:'OANDA:US30USD',           td:'',        cls:'cblue', u:'',  dp:0, price:42580,  chg:0.45, hi:42800, lo:42200, vol:'$820B',spread:'2'},
+  {sym:'US500',  disp:'S&P', name:'S&P 500',       cat:'Indices',    tv:'OANDA:SPX500USD',           td:'',        cls:'cgreen',u:'',  dp:0, price:5820,   chg:0.62, hi:5850,  lo:5780,  vol:'$450B',spread:'0.5'},
+  {sym:'NAS100', disp:'NAS', name:'Nasdaq 100',    cat:'Indices',    tv:'OANDA:NAS100USD',       td:'',        cls:'cbtc',  u:'',  dp:0, price:20450,  chg:0.88, hi:20600, lo:20200, vol:'$320B',spread:'1'},
+  {sym:'DAX40',  disp:'DAX', name:'DAX 40',        cat:'Indices',    tv:'OANDA:DE30EUR',         td:'',        cls:'cred',  u:'',  dp:0, price:19820,  chg:-0.24,hi:19950, lo:19700, vol:'$180B',spread:'1'},
+  {sym:'FTSE100',disp:'FTSE',name:'FTSE 100',      cat:'Indices',    tv:'OANDA:UK100GBP',    td:'',        cls:'csil',  u:'',  dp:0, price:8420,   chg:0.18, hi:8460,  lo:8380,  vol:'$95B', spread:'0.5'},
   // COMMODITIES
   {sym:'XAU/USD',disp:'GOLD',name:'Gold',          cat:'Commodities',tv:'OANDA:XAUUSD',     td:'XAU/USD', cls:'cgold', u:'$', dp:2, price:4080,   chg:0.42, hi:4095,  lo:4065,  vol:'$198B',spread:'0.35'},
   {sym:'XAG/USD',disp:'SILV',name:'Silver',        cat:'Commodities',tv:'OANDA:XAGUSD',     td:'XAG/USD', cls:'csil',  u:'$', dp:3, price:29.84,  chg:0.87, hi:30.12, lo:29.45, vol:'$8B',  spread:'0.04'},
-  {sym:'WTI',    disp:'WTI', name:'Crude Oil WTI', cat:'Commodities',tv:'TVC:USOIL',        td:'',        cls:'cred',  u:'$', dp:2, price:78.45,  chg:-0.32,hi:79.2,  lo:77.8,  vol:'$65B', spread:'0.02'},
-  {sym:'BRENT',  disp:'BRENT',name:'Brent Oil',    cat:'Commodities',tv:'TVC:UKOIL',        td:'',        cls:'cred',  u:'$', dp:2, price:82.10,  chg:-0.28,hi:82.9,  lo:81.3,  vol:'$70B', spread:'0.02'},
-  {sym:'NATGAS', disp:'GAS', name:'Natural Gas',   cat:'Commodities',tv:'TVC:NATGAS',       td:'',        cls:'cblue', u:'$', dp:3, price:2.845,  chg:1.24, hi:2.89,  lo:2.78,  vol:'$12B', spread:'0.002'},
+  {sym:'WTI',    disp:'WTI', name:'Crude Oil WTI', cat:'Commodities',tv:'OANDA:WTICOUSD',        td:'',        cls:'cred',  u:'$', dp:2, price:78.45,  chg:-0.32,hi:79.2,  lo:77.8,  vol:'$65B', spread:'0.02'},
+  {sym:'BRENT',  disp:'BRENT',name:'Brent Oil',    cat:'Commodities',tv:'OANDA:BCOUSD',        td:'',        cls:'cred',  u:'$', dp:2, price:82.10,  chg:-0.28,hi:82.9,  lo:81.3,  vol:'$70B', spread:'0.02'},
+  {sym:'NATGAS', disp:'GAS', name:'Natural Gas',   cat:'Commodities',tv:'OANDA:NATGASUSD',       td:'',        cls:'cblue', u:'$', dp:3, price:2.845,  chg:1.24, hi:2.89,  lo:2.78,  vol:'$12B', spread:'0.002'},
   // BONDS
   {sym:'US10Y',  disp:'US10Y',name:'US 10-Year',   cat:'Bonds',      tv:'TVC:US10Y',        td:'',        cls:'cblue', u:'',  dp:3, price:4.425,  chg:-0.05,hi:4.48,  lo:4.38,  vol:'—',    spread:'0.001'},
   {sym:'UK10Y',  disp:'UK10Y',name:'UK Gilt 10Y',  cat:'Bonds',      tv:'TVC:GB10Y',        td:'',        cls:'cgreen',u:'',  dp:3, price:4.245,  chg:-0.03,hi:4.28,  lo:4.20,  vol:'—',    spread:'0.001'},
@@ -631,22 +631,31 @@ async function fetchAllPrices(){
   try{
     var r=await fetch('https://api.twelvedata.com/price?symbol='+syms+'&apikey='+TD_KEY);
     var data=await r.json();
-    tdAssets.forEach(function(a){
-      var val=data[a.td]||data[a.sym];
-      if(val&&val.price){
-        var p=parseFloat(val.price);
-        if(p>0){
-          prices[a.sym]=parseFloat(p.toFixed(a.dp));
-          a.hi=Math.max(a.hi,prices[a.sym]);
-          a.lo=Math.min(a.lo,prices[a.sym]);
-        }
-      } else if(data.price&&tdAssets.length===1){
-        prices[a.sym]=parseFloat(parseFloat(data.price).toFixed(a.dp));
+    // Handle both single and multi-symbol responses
+    if(data.price){
+      // Single symbol returned (shouldn't happen with batch but handle it)
+      if(tdAssets.length===1){
+        var a=tdAssets[0];
+        var p=parseFloat(data.price);
+        if(p>0){prices[a.sym]=parseFloat(p.toFixed(a.dp));a.hi=Math.max(a.hi,p);a.lo=Math.min(a.lo,p);}
       }
-    });
+    } else {
+      // Multi-symbol response: {"EUR/USD":{"price":"1.07"},"BTC/USD":{"price":"59870"},...}
+      tdAssets.forEach(function(a){
+        var val=data[a.td];
+        if(val&&val.price&&!val.code){
+          var p=parseFloat(val.price);
+          if(p>0){
+            prices[a.sym]=parseFloat(p.toFixed(a.dp));
+            a.hi=Math.max(a.hi,prices[a.sym]);
+            a.lo=Math.min(a.lo,prices[a.sym]);
+          }
+        }
+      });
+    }
     buildStrip();buildTicker();updateCH();updateStats();
-    showToast('✅ Live prices loaded');
-  }catch(e){console.log('Price fetch error:',e);}
+    showToast('✅ Live prices updated');
+  }catch(e){console.log('Price fetch error:',e);showToast('⚠️ Using cached prices');}
 }
 
 async function fetchLiveSelected(){
@@ -728,6 +737,13 @@ function sysP(){
 }
 async function sendAI(txt){
   if(aiLoading)return;
+  var apiKey=localStorage.getItem('nexus_claude_key')||'';
+  if(!apiKey){
+    var k=prompt('Enter your Anthropic API key to use Claude AI:\n(Get it free at console.anthropic.com)');
+    if(!k){return;}
+    localStorage.setItem('nexus_claude_key',k.trim());
+    apiKey=k.trim();
+  }
   var inp=document.getElementById('ain');
   var text=txt||inp.value.trim();if(!text)return;
   if(!txt){inp.value='';inp.style.height='';}
@@ -735,12 +751,28 @@ async function sendAI(txt){
   aiLoading=true;document.getElementById('sbtn').disabled=true;
   var tid=addTyping();
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sysP(),messages:chatHist})});
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sysP(),messages:chatHist})
+    });
     var data=await r.json();removeTyping(tid);
     if(data.content&&data.content[0]&&data.content[0].text){
       var reply=data.content[0].text;chatHist.push({role:'assistant',content:reply});appendM(reply,'ai');
+    }else if(data.error){
+      if(data.error.type==='authentication_error'){
+        localStorage.removeItem('nexus_claude_key');
+        appendM('⚠️ Invalid API key. Click AI again to re-enter.','ai');
+      }else{
+        appendM('⚠️ Error: '+data.error.message,'ai');
+      }
     }else appendM('⚠️ No response. Try again.','ai');
-  }catch(e){removeTyping(tid);appendM('⚠️ Connection error.','ai');}
+  }catch(e){removeTyping(tid);appendM('⚠️ Connection error: '+e.message,'ai');}
   aiLoading=false;document.getElementById('sbtn').disabled=false;
 }
 function qa(q){sendAI(q);}
@@ -758,6 +790,11 @@ function addTyping(){
 function removeTyping(id){var e=document.getElementById(id);if(e)e.remove();}
 function akey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}}
 function arz(el){el.style.height='';el.style.height=Math.min(el.scrollHeight,70)+'px';}
+
+function resetAIKey(){
+  localStorage.removeItem('nexus_claude_key');
+  showToast('API key cleared. Enter new key when using AI.');
+}
 
 /* ═══ TOAST ═══ */
 function showToast(msg,dur){

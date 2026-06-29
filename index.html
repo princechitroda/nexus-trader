@@ -969,12 +969,12 @@ function renderMd(txt){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/#{3}\s*(.+)/g,'<div style="font-family:'Syne',sans-serif;font-weight:800;font-size:11px;color:var(--gold);margin:8px 0 3px">$1</div>')
-    .replace(/#{2}\s*(.+)/g,'<div style="font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:var(--platinum);margin:9px 0 3px">$1</div>')
-    .replace(/#{1}\s*(.+)/g,'<div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:var(--gold);margin:10px 0 4px">$1</div>')
+    .replace(/#{3}\s*(.+)/g,'<div style="font-family:Syne,sans-serif;font-weight:800;font-size:11px;color:var(--gold);margin:8px 0 3px">$1</div>')
+    .replace(/#{2}\s*(.+)/g,'<div style="font-family:Syne,sans-serif;font-weight:800;font-size:12px;color:var(--platinum);margin:9px 0 3px">$1</div>')
+    .replace(/#{1}\s*(.+)/g,'<div style="font-family:Syne,sans-serif;font-weight:800;font-size:13px;color:var(--gold);margin:10px 0 4px">$1</div>')
     .replace(/^-{3,}$/gm,'<hr style="border:none;border-top:1px solid var(--border);margin:8px 0">')
     .replace(/^[-•]\s+(.+)/gm,'<div style="padding-left:10px;margin:2px 0">• $1</div>')
-    .replace(/\|(.+)\|/g,'<span style="font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--bg2);padding:2px 5px;border-radius:3px;margin:1px">$1</span>')
+    .replace(/\|(.+)\|/g,'<span style="font-family:JetBrains Mono,monospace;font-size:9px;background:var(--bg2);padding:2px 5px;border-radius:3px;margin:1px">$1</span>')
     .replace(/\n/g,'<br>');
 }
 function appendM(txt,role){
@@ -1017,7 +1017,7 @@ let demoTrades=[], tradeCount=0, winCount=0, totalPnl=0;
 
 function buildStratGrid(){
   document.getElementById('stratGrid').innerHTML=STRATEGIES.map(function(s){
-    return '<div class="strat-card'+(s.id===selStrat?' on':'')+'" onclick="pickStrat(''+s.id+'')">'
+    return '<div class="strat-card'+(s.id===selStrat?' on':'')+'" onclick="pickStrat(\''+s.id+'\')">'
       +'<div class="sc-ico">'+s.ico+'</div>'
       +'<div class="sc-nm">'+s.nm+'</div>'
       +'<div class="sc-ds">'+s.ds+'</div>'

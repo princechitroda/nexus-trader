@@ -41,6 +41,15 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .pp.on{border-color:var(--gold);color:var(--gold);background:var(--gold3)}
 #app{display:none;flex-direction:column;position:fixed;inset:0;overflow:hidden}
 #app.show{display:flex}
+/* DESKTOP: center the app with a max width, phone frame look */
+@media(min-width:900px){
+  body{background:radial-gradient(ellipse at top,#0d1018 0%,#06070b 60%)}
+  #app{position:fixed;inset:0;max-width:1400px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border);box-shadow:0 0 80px rgba(0,0,0,.6)}
+  #splash{max-width:1400px;margin:0 auto}
+}
+@media(min-width:1500px){
+  #app{max-width:1400px}
+}
 .tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;height:48px}
 .tlogo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px}
 .tlogo span{color:var(--gold)}
@@ -266,6 +275,55 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 
 ::-webkit-scrollbar{width:2px;height:2px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ═══════════════════════════════════════
+   DESKTOP RESPONSIVE — proper sizing
+═══════════════════════════════════════ */
+@media(min-width:900px){
+  /* Bigger, more readable typography on desktop */
+  .tbar{height:56px;padding:12px 24px}
+  .nav{height:52px}
+  .nv{font-size:10px}
+  .nv svg{width:20px;height:20px}
+  .catstrip{padding:10px 24px;gap:8px}
+  .astrip{padding:10px 24px;gap:8px}
+  .ac{min-width:110px;padding:9px 13px}
+  .ac-s{font-size:11px}
+  .ac-p{font-size:13px}
+  .ac-c{font-size:10px}
+  .chdr{padding:12px 24px}
+  .csym-txt{font-size:14px}
+  .cprice{font-size:24px}
+  .cchg-el{font-size:13px}
+  /* Chat / AI wider and centered */
+  .msgs{padding:20px 24px}
+  .msg{max-width:75%}
+  .ai-bar{padding:14px 24px}
+  /* Signals / bot content max readable width */
+  .sigfeed{padding:0 24px}
+  /* Account / profile */
+  .prow{padding:14px 24px}
+}
+/* Large desktop — keep content readable, not stretched */
+@media(min-width:1300px){
+  .chdr,.catstrip,.astrip,.tbar,.nav{padding-left:32px;padding-right:32px}
+  .ac{min-width:120px}
+}
+/* Tablet */
+@media(min-width:600px) and (max-width:899px){
+  .ac{min-width:100px}
+  .cprice{font-size:20px}
+}
+
+
+/* Price flash on update */
+@keyframes priceUp{0%{color:#00E5A0}100%{color:var(--platinum)}}
+@keyframes priceDn{0%{color:#FF4560}100%{color:var(--platinum)}}
+.flash-up{animation:priceUp .6s ease-out}
+.flash-dn{animation:priceDn .6s ease-out}
+.live-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Syne',sans-serif;font-weight:700;font-size:8px;color:#00E5A0;margin-left:8px;vertical-align:middle}
+.live-badge .ld-dot{width:5px;height:5px;border-radius:50%;background:#00E5A0;animation:lpulse 1.2s ease-in-out infinite}
+
 </style>
 </head>
 <body>
@@ -341,6 +399,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
             <div class="cprice" id="cprice">Loading...</div>
             <div class="cchg-el" id="cchg"></div>
           </div>
+          <div id="mktStatus" style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;margin-top:3px;display:flex;align-items:center">Open</div>
         </div>
         <div class="tv-hint">TradingView<br>Chart ↓</div>
       </div>
@@ -629,6 +688,37 @@ let aiLoading=false, chatHist=[];
 let sigLoaded=false;
 let selectedPlan='Free';
 
+/* ═══ MARKET HOURS (UTC) ═══ */
+function getMarketStatus(asset){
+  var now=new Date();
+  var d=now.getUTCDay(), h=now.getUTCHours(), m=now.getUTCMinutes();
+  var t=h+m/60, cat=asset.cat;
+  if(cat==='Crypto') return {open:true,label:'24/7',txt:'Open'};
+  if(cat==='Forex'||cat==='Commodities'){
+    if(d===6) return {open:false,label:'Weekend',txt:'Closed'};
+    if(d===0&&t<22) return {open:false,label:'Opens Sun 22:00 UTC',txt:'Closed'};
+    if(d===5&&t>=22) return {open:false,label:'Weekend',txt:'Closed'};
+    return {open:true,label:'24/5',txt:'Open'};
+  }
+  if(cat==='Stocks'||cat==='ETFs'){
+    if(d===0||d===6) return {open:false,label:'Weekend',txt:'Closed'};
+    if(t>=14.5&&t<21) return {open:true,label:'NYSE Open',txt:'Open'};
+    if(t<14.5) return {open:false,label:'Opens 14:30 UTC',txt:'Pre-market'};
+    return {open:false,label:'After-hours',txt:'Closed'};
+  }
+  if(cat==='Indices'){
+    if(d===0||d===6) return {open:false,label:'Weekend',txt:'Closed'};
+    if(t>=13.5&&t<21) return {open:true,label:'Open',txt:'Open'};
+    return {open:false,label:'Futures only',txt:'Closed'};
+  }
+  if(cat==='Bonds'){
+    if(d===0||d===6) return {open:false,label:'Weekend',txt:'Closed'};
+    if(t>=13&&t<21) return {open:true,label:'Open',txt:'Open'};
+    return {open:false,label:'Closed',txt:'Closed'};
+  }
+  return {open:true,label:'',txt:'Open'};
+}
+
 /* ═══ AUTH ═══ */
 function atab(t){
   document.querySelectorAll('.atab').forEach((el,i)=>el.classList.toggle('on',['login','signup'][i]===t));
@@ -671,8 +761,16 @@ function launchApp(){
   loadTV(sel.tv);
   fetchAllPrices();
   initBot();
-  setInterval(fetchLiveSelected,30000);  // every 30 sec
-  setInterval(tickSimulated,3000);       // simulate non-TD assets
+  setInterval(fetchLiveSelected,3000);   // selected asset every 3s (fast)
+  setInterval(fetchAllPrices,20000);     // all strip prices every 20s
+  setInterval(tickSimulated,3000);       // smooth non-TD assets
+  setInterval(refreshMarketStatus,30000);// market open/close every 30s
+}
+
+/* ═══ MARKET STATUS REFRESH ═══ */
+function refreshMarketStatus(){
+  buildStrip();
+  updateCH();
 }
 
 /* ═══ HEIGHTS ═══ */
@@ -702,8 +800,10 @@ function buildStrip(){
   var filtered=ASSETS.filter(function(a){return a.cat===curCat;});
   document.getElementById('astrip').innerHTML=filtered.map(function(a){
     var p=prices[a.sym]||a.price,ch=a.chg,on=a.sym===sel.sym;
+    var ms=getMarketStatus(a);
+    var dot=ms.open?'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#00E5A0;margin-right:3px;box-shadow:0 0 4px rgba(0,229,160,.6)"></span>':'<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#FF4560;margin-right:3px"></span>';
     return '<div class="ac'+(on?' on':'')+'" onclick="pickA(\''+a.sym+'\')">'
-      +'<div class="ac-s '+a.cls+'">'+a.disp+'</div>'
+      +'<div class="ac-s '+a.cls+'">'+dot+a.disp+'</div>'
       +'<div class="ac-p">'+a.u+fmtPrice(p,a.dp)+'</div>'
       +'<div class="ac-c '+(ch>=0?'up':'dn')+'">'+(ch>=0?'▲':'▼')+Math.abs(ch).toFixed(2)+'%</div>'
       +'</div>';
@@ -775,13 +875,30 @@ function fmtPrice(p,dp){
   if(p>=1000)return p.toFixed(dp>2?2:dp);
   return p.toFixed(dp);
 }
+var _lastPrice={};
 function updateCH(){
   var a=sel,p=prices[a.sym]||a.price;
   document.getElementById('csym').textContent=a.name;
-  document.getElementById('cprice').textContent=a.u+fmtPrice(p,a.dp);
+  var pEl=document.getElementById('cprice');
+  var newTxt=a.u+fmtPrice(p,a.dp);
+  // Flash on price change
+  if(_lastPrice[a.sym]!==undefined && _lastPrice[a.sym]!==p){
+    pEl.classList.remove('flash-up','flash-dn');
+    void pEl.offsetWidth; // reflow
+    pEl.classList.add(p>_lastPrice[a.sym]?'flash-up':'flash-dn');
+  }
+  _lastPrice[a.sym]=p;
+  pEl.innerHTML=newTxt+'<span class="live-badge"><span class="ld-dot"></span>LIVE</span>';
   var el=document.getElementById('cchg');
   el.textContent=(a.chg>=0?'+':'')+a.chg.toFixed(2)+'%';
   el.className='cchg-el '+(a.chg>=0?'up':'dn');
+  // Market status badge
+  var ms=getMarketStatus(a);
+  var statusEl=document.getElementById('mktStatus');
+  if(statusEl){
+    statusEl.innerHTML='<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(ms.open?'#00E5A0':'#FF4560')+';margin-right:4px'+(ms.open?';box-shadow:0 0 6px rgba(0,229,160,.6);animation:lpulse 1.5s ease-in-out infinite':'')+'"></span>'+ms.txt+(ms.label?' · '+ms.label:'');
+    statusEl.style.color=ms.open?'#00E5A0':'#FF4560';
+  }
 }
 function updateStats(){
   var a=sel;
@@ -796,7 +913,9 @@ function updateStats(){
 function buildTicker(){
   var items=ASSETS.map(function(a){
     var p=prices[a.sym]||a.price,ch=a.chg;
-    return '<div class="ti"><span class="ti-s">'+a.disp+'</span><span class="ti-p">'+a.u+fmtPrice(p,a.dp)+'</span><span class="'+(ch>=0?'up':'dn')+'">'+(ch>=0?'+':'')+ch.toFixed(2)+'%</span></div>';
+    var ms=getMarketStatus(a);
+    var dot='<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:'+(ms.open?'#00E5A0':'#FF4560')+';margin-right:4px;vertical-align:middle"></span>';
+    return '<div class="ti">'+dot+'<span class="ti-s">'+a.disp+'</span><span class="ti-p">'+a.u+fmtPrice(p,a.dp)+'</span><span class="'+(ch>=0?'up':'dn')+'">'+(ch>=0?'+':'')+ch.toFixed(2)+'%</span></div>';
   }).join('');
   document.getElementById('tkr').innerHTML=items+items;
 }
@@ -831,8 +950,7 @@ async function fetchAllPrices(){
       });
     }
     buildStrip();buildTicker();updateCH();updateStats();
-    showToast('✅ Live prices updated');
-  }catch(e){console.log('Price fetch error:',e);showToast('⚠️ Using cached prices');}
+  }catch(e){console.log('Price fetch error:',e);}
 }
 
 async function fetchLiveSelected(){
@@ -1032,7 +1150,7 @@ function pickStrat(id){
   showToast('Strategy: '+s.nm);
 }
 
-function toggleBot(){
+async function toggleBot(){
   botOn=!botOn;
   var track=document.getElementById('togTrack');
   var lbl=document.getElementById('togLbl');
@@ -1044,17 +1162,10 @@ function toggleBot(){
     track.classList.add('on');
     lbl.textContent='BOT ON';lbl.className='tog-lbl on';
     btn.textContent='⏹ STOP BOT';btn.className='start-btn stop';
-    dot.classList.add('live');txt.textContent='Bot Running — Watching Market';
+    dot.classList.add('live');txt.textContent='Bot ACTIVE — Claude AI trading on MT5';
     document.getElementById('pStatus').textContent='Running';
     document.getElementById('pStatus').className='perf-v up';
-    showToast('🤖 Bot started! Watching market...');
-    // Simulate demo mode
-    botInterval=setInterval(runBotTick,8000);
-    // Simulate MT5 connected
-    document.getElementById('baAcct').textContent='#'+Math.floor(Math.random()*90000+10000);
-    document.getElementById('baBal').textContent='$1,000.00';
-    document.getElementById('baEq').textContent='$1,000.00';
-    document.getElementById('baPnl').textContent='$0.00';
+    showToast('🤖 Bot STARTED! MT5 will execute Claude AI signals.');
   } else {
     track.classList.remove('on');
     lbl.textContent='BOT OFF';lbl.className='tog-lbl';
@@ -1062,12 +1173,80 @@ function toggleBot(){
     dot.classList.remove('live');txt.textContent='Bot Stopped';
     document.getElementById('pStatus').textContent='Idle';
     document.getElementById('pStatus').className='perf-v';
-    showToast('Bot stopped.');
-    if(botInterval)clearInterval(botInterval);
+    showToast('Bot stopped. MT5 will hold positions.');
   }
+
+  // Send ON/OFF command to Railway server (which controls MT5 EA)
+  try{
+    await fetch(RAILWAY_URL+'/bot/control',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({key:'NEXUS-BOT-KEY-001',enabled:botOn})
+    });
+  }catch(e){console.log('Bot control error:',e);}
+}
+
+/* ═══ POLL REAL MT5 DASHBOARD (P&L, trades, account) ═══ */
+async function pollDashboard(){
+  try{
+    var r=await fetch(RAILWAY_URL+'/dashboard');
+    var d=await r.json();
+
+    // Sync bot toggle with server state
+    if(d.botEnabled!==undefined && d.botEnabled!==botOn){
+      botOn=d.botEnabled;
+      var track=document.getElementById('togTrack');
+      var lbl=document.getElementById('togLbl');
+      var dot=document.getElementById('bstDot');
+      if(botOn){track.classList.add('on');lbl.textContent='BOT ON';lbl.className='tog-lbl on';dot.classList.add('live');}
+      else{track.classList.remove('on');lbl.textContent='BOT OFF';lbl.className='tog-lbl';dot.classList.remove('live');}
+    }
+
+    // MT5 account info (real data from EA)
+    if(d.mt5){
+      var st=document.getElementById('bstTxt');
+      if(d.mt5.status==='CONNECTED'){
+        document.getElementById('baAcct').textContent=d.mt5.symbol||'XAUUSD';
+        document.getElementById('baBal').textContent='$'+parseFloat(d.mt5.balance||0).toFixed(2);
+        document.getElementById('baEq').textContent='$'+parseFloat(d.mt5.equity||0).toFixed(2);
+        if(st&&!botOn)st.textContent='MT5 Connected — bot OFF';
+      } else {
+        if(st)st.textContent='MT5 Disconnected — open MetaTrader 5';
+      }
+    }
+
+    // Performance stats (real bot trades)
+    if(d.stats){
+      document.getElementById('pTrades').textContent=d.stats.totalTrades||0;
+      var wr=d.stats.totalTrades>0?Math.round((d.stats.wins/d.stats.totalTrades)*100):0;
+      document.getElementById('pWin').textContent=wr+'%';
+      document.getElementById('pWin').className='perf-v '+(wr>=50?'up':'dn');
+      var pnl=d.stats.totalPnl||0;
+      document.getElementById('pPnl').textContent=(pnl>=0?'+$':'−$')+Math.abs(pnl).toFixed(2);
+      document.getElementById('pPnl').className='perf-v '+(pnl>=0?'up':'dn');
+      var tpnl=document.getElementById('baPnl');
+      if(tpnl){tpnl.textContent=(pnl>=0?'+$':'−$')+Math.abs(pnl).toFixed(2);tpnl.className='ba-v '+(pnl>=0?'up':'dn');}
+    }
+
+    // Live trades list (real MT5 trades)
+    if(d.trades && d.trades.length>0){
+      document.getElementById('liveTrades').innerHTML=d.trades.slice(0,8).map(function(t){
+        var time=new Date(t.ts).toLocaleTimeString();
+        var pnl=t.pnl||0;
+        var won=pnl>=0;
+        return '<div class="trade-card">'
+          +'<div class="tc-side '+(t.action||'BUY').toLowerCase()+'">'+(t.action||'BUY')+'</div>'
+          +'<div><div class="tc-sym">'+(t.symbol||'XAUUSD')+'</div>'
+          +'<div class="tc-prc">@ '+parseFloat(t.price||0).toFixed(2)+' · '+(t.lot||'0.01')+' lot · '+time+'</div></div>'
+          +'<div class="tc-pnl '+(won?'up':'dn')+'">'+(won?'+$':'−$')+Math.abs(pnl).toFixed(2)+'</div>'
+          +'</div>';
+      }).join('');
+    }
+  }catch(e){console.log('Dashboard poll error:',e);}
 }
 
 function runBotTick(){
+  return; // disabled — using real MT5 data via pollDashboard
   if(!botOn) return;
   // Simulate a trade signal
   var strat=STRATEGIES.find(function(s){return s.id===selStrat;})||STRATEGIES[6];
@@ -1121,7 +1300,12 @@ const RAILWAY_URL='https://nexus-trader-production-0fb3.up.railway.app';
 function initBot(){
   buildStratGrid();
   document.getElementById('hookUrl').textContent=RAILWAY_URL+'/webhook';
-  try{fetchLiveSignal();setInterval(fetchLiveSignal,30000);}catch(e){}
+  try{
+    fetchLiveSignal();
+    setInterval(fetchLiveSignal,30000);
+    pollDashboard();
+    setInterval(pollDashboard,8000);
+  }catch(e){}
 }
 
 async function fetchLiveSignal(){

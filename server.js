@@ -23,6 +23,7 @@ let tradeLog     = [];
 let botEnabled   = false;  // Starts OFF — only NEXUS TRADER toggle turns it ON
 let lastGoodCandles = [];  // Cache last successful candle data (survives API rate limits)
 let lastGoodPrice   = 0;   // Cache last known good price
+let priceHistory    = [];  // Rolling price samples — builds our own candles when API is limited
 let botStats     = { totalTrades:0, wins:0, losses:0, totalPnl:0.0 };
 const CACHE_MS   = 5 * 60 * 1000; // 5 minutes
 
@@ -58,7 +59,9 @@ function postData(hostname, path, body, headers) {
 
 // ── RSI Calculator ────────────────────────────────────────────
 function calcRSI(closes, period = 14) {
-  if (closes.length < period + 1) return 50;
+  // Adapt period to available data (need at least 2 points)
+  if (closes.length < 2) return 50;
+  if (closes.length < period + 1) period = closes.length - 1;
   let gains = 0, losses = 0;
   for (let i = 0; i < period; i++) {
     const diff = closes[i] - closes[i + 1]; // newest first
@@ -131,11 +134,34 @@ async function generateSmartSignal(sym) {
       console.log('📦 Using cached candles:', candles.length);
     }
 
-    // If we STILL have no data at all, return safe HOLD (don't crash)
+    // Record this price in rolling history (keep last 60 samples)
+    if (price && !isNaN(price)) {
+      priceHistory.push(price);
+      if (priceHistory.length > 60) priceHistory.shift();
+    }
+
+    // If candles missing/corrupt but we have price history, SYNTHESIZE candles from it
+    if ((candles.length === 0 || !candles[0] || !candles[0].close) && priceHistory.length >= 5) {
+      console.log('🔧 Synthesizing candles from price history (' + priceHistory.length + ' samples)');
+      candles = [];
+      // Build newest-first synthetic candles from consecutive price samples
+      for (let i = priceHistory.length - 1; i > 0; i--) {
+        const c = priceHistory[i], o = priceHistory[i-1];
+        candles.push({
+          open:  o.toFixed(2),
+          high:  Math.max(o, c).toFixed(2),
+          low:   Math.min(o, c).toFixed(2),
+          close: c.toFixed(2),
+          datetime: new Date(Date.now() - (priceHistory.length-i)*60000).toISOString()
+        });
+      }
+    }
+
+    // If we STILL have no usable data at all, return safe HOLD (don't crash)
     if ((!price || isNaN(price)) && candles.length === 0) {
       console.log('❌ No price and no candles available — returning HOLD');
       const holdSig = { signal:'HOLD', confidence:0, price:0, sl:0, tp:0,
-        reasoning:'Market data temporarily unavailable (API rate limit). Bot will resume when data returns.',
+        reasoning:'Market data temporarily unavailable. Bot is collecting price samples and will resume shortly.',
         strategy:'WAITING', rsi:50, ma20:0, ma50:0, atr:0, ts: Date.now() };
       cachedSignal = holdSig;
       return holdSig;
@@ -149,11 +175,14 @@ async function generateSmartSignal(sym) {
     const rsi  = calcRSI(closes, 14);
     const ma20 = calcMA(closes, 20);
     const ma50 = calcMA(closes, 50);
-    const atr  = parseFloat((highs.slice(0,14).map((h,i) => h - lows[i]).reduce((a,b)=>a+b,0)/14).toFixed(2));
+    // ATR — adapt to available candles
+    const atrN = Math.min(14, highs.length);
+    const atr  = atrN > 0 ? parseFloat((highs.slice(0,atrN).map((h,i) => h - lows[i]).reduce((a,b)=>a+b,0)/atrN).toFixed(2)) : 0;
 
-    // Recent highs and lows (support/resistance)
-    const recentHigh = parseFloat(Math.max(...highs.slice(0,10)).toFixed(2));
-    const recentLow  = parseFloat(Math.min(...lows.slice(0,10)).toFixed(2));
+    // Recent highs and lows (support/resistance) — adapt to available data
+    const hiN = Math.min(10, highs.length);
+    const recentHigh = hiN > 0 ? parseFloat(Math.max(...highs.slice(0,hiN)).toFixed(2)) : price;
+    const recentLow  = hiN > 0 ? parseFloat(Math.min(...lows.slice(0,hiN)).toFixed(2)) : price;
 
     console.log(`📊 RSI: ${rsi} | MA20: ${ma20} | MA50: ${ma50} | ATR: ${atr}`);
 
@@ -374,4 +403,31 @@ app.listen(PORT, () => {
   console.log('');
   // Generate first signal on startup
   setTimeout(() => generateSmartSignal('XAUUSD'), 3000);
+
+  // Background price collector — samples gold price every 30s to build indicator history
+  // This runs independently so we always have data even when Twelve Data candles are rate-limited
+  setInterval(async () => {
+    try {
+      let p = 0;
+      // Try backup free API first (no rate limit)
+      try {
+        const b = await fetchData('https://api.gold-api.com/price/XAU');
+        if (b && b.price) p = parseFloat(b.price);
+      } catch(e) {}
+      // Fallback to Twelve Data price if backup failed
+      if (!p || isNaN(p)) {
+        try {
+          const d = await fetchData(`https://api.twelvedata.com/price?symbol=XAU/USD&apikey=${TD_KEY}`);
+          if (d && d.price) p = parseFloat(d.price);
+        } catch(e) {}
+      }
+      if (p && !isNaN(p)) {
+        lastGoodPrice = p;
+        priceHistory.push(p);
+        if (priceHistory.length > 60) priceHistory.shift();
+        // Log every 10th sample to avoid spam
+        if (priceHistory.length % 10 === 0) console.log('📈 Price history:', priceHistory.length, 'samples | latest $' + p.toFixed(2));
+      }
+    } catch(e) { console.log('Price collector error:', e.message); }
+  }, 30000); // every 30 seconds
 });

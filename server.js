@@ -20,7 +20,7 @@ const PORT      = process.env.PORT || 3000;
 let cachedSignal = { signal:'HOLD', confidence:0, price:0, sl:0, tp:0, reasoning:'Starting...', strategy:'Claude AI', ts:0 };
 let mtStatus     = { status:'DISCONNECTED', balance:0, equity:0, symbol:'' };
 let tradeLog     = [];
-let botEnabled   = true;  // Controlled from NEXUS TRADER UI
+let botEnabled   = false;  // Starts OFF — only NEXUS TRADER toggle turns it ON
 let botStats     = { totalTrades:0, wins:0, losses:0, totalPnl:0.0 };
 const CACHE_MS   = 5 * 60 * 1000; // 5 minutes
 

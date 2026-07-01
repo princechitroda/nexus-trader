@@ -324,7 +324,15 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .live-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Syne',sans-serif;font-weight:700;font-size:8px;color:#00E5A0;margin-left:8px;vertical-align:middle}
 .live-badge .ld-dot{width:5px;height:5px;border-radius:50%;background:#00E5A0;animation:lpulse 1.2s ease-in-out infinite}
 
+
+.googlebtn{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border2);background:#fff;color:#1f1f1f;font-family:'Syne',sans-serif;font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;transition:all .2s}
+.googlebtn:hover{background:#f5f5f5;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.googlebtn:active{transform:translateY(0)}
+.googlebtn svg{flex-shrink:0}
+
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 <div id="splash">
@@ -340,6 +348,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
       <div class="fld"><label>Password</label><input type="password" id="lp" placeholder="••••••••"></div>
       <button class="abtn" onclick="doLogin()">Sign In →</button>
       <div class="adiv">or</div>
+      <button class="googlebtn" onclick="doGoogle()"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>Continue with Google</button>
       <button class="gbtn" onclick="doGuest()">Continue as Guest (Free)</button>
     </div>
     <div id="fSignup" style="display:none">
@@ -352,6 +361,8 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
       <div class="fld"><label>Email</label><input type="email" id="se" placeholder="you@example.com"></div>
       <div class="fld"><label>Password</label><input type="password" id="sp" placeholder="Create password"></div>
       <button class="abtn" onclick="doSignup()">Create Account →</button>
+      <div class="adiv">or</div>
+      <button class="googlebtn" onclick="doGoogle()"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>Sign up with Google</button>
     </div>
   </div>
 </div>
@@ -374,9 +385,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
     </div>
     <div class="nv" id="nv-ai" onclick="goScr('ai')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>AI
-    </div>
-    <div class="nv" id="nv-signals" onclick="goScr('signals')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Signals
     </div>
     <div class="nv" id="nv-bot" onclick="goScr('bot')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>Bot
@@ -440,20 +448,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
       <div class="ai-bar" id="aiBar">
         <textarea class="ain" id="ain" placeholder="Ask about any market…" rows="1" onkeydown="akey(event)" oninput="arz(this)"></textarea>
         <button class="sbtn" id="sbtn" onclick="sendAI()">➤</button>
-      </div>
-    </div>
-    <div class="scr" id="s-signals">
-      <div class="sighdr">
-        <div class="sigtitle">MT5 Signal Feed</div>
-        <div class="sigcnt" id="sigCnt">0 Active</div>
-      </div>
-      <div class="sigfeed" id="sigFeed">
-        <div style="text-align:center;padding:32px 16px;color:var(--muted)">
-          <div style="font-size:28px;margin-bottom:10px">📡</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:6px">No Signals Yet</div>
-          <div style="font-size:11px;line-height:1.6;margin-bottom:14px">Connect MT5 EA to receive live signals.</div>
-          <button onclick="loadDemo()" style="padding:9px 20px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);color:var(--gold);font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer">Load Demo Signals</button>
-        </div>
       </div>
     </div>
     <!-- BOT SCREEN -->
@@ -630,6 +624,18 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 </div>
 <div class="toast" id="toastEl"></div>
 <script>
+/* ═══════════ FIREBASE SETUP ═══════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBsp89bY7xjIzEhgGpim8bqtdjcOC6O0Hk",
+  authDomain: "nexus-trader-f04b5.firebaseapp.com",
+  projectId: "nexus-trader-f04b5",
+  storageBucket: "nexus-trader-f04b5.firebasestorage.app",
+  messagingSenderId: "1084406266447",
+  appId: "1:1084406266447:web:8268eeeae384ec15dfc83a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
 const TD_KEY='6f127f83a2db4b1686d2926a7f35049f';
 
 /* ═══════════════════════════════════════════
@@ -729,15 +735,82 @@ function setPlan(el,p){document.querySelectorAll('.pp').forEach(x=>x.classList.r
 function doLogin(){
   var e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value.trim();
   if(!e||!p){showToast('Enter email and password');return;}
-  currentUser={name:e.split('@')[0],email:e};currentPlan='Pro';launchApp();
+  var btn=event.target;btn.textContent='Signing in...';btn.disabled=true;
+  auth.signInWithEmailAndPassword(e,p)
+    .then(function(cred){
+      var u=cred.user;
+      currentUser={name:u.displayName||e.split('@')[0],email:u.email,uid:u.uid};
+      currentPlan=localStorage.getItem('plan_'+u.uid)||'Free';
+      showToast('Welcome back!');
+      launchApp();
+    })
+    .catch(function(err){
+      btn.textContent='Sign In →';btn.disabled=false;
+      var msg=err.code==='auth/invalid-credential'?'Wrong email or password':
+              err.code==='auth/user-not-found'?'No account found — sign up first':
+              err.code==='auth/wrong-password'?'Wrong password':
+              err.code==='auth/invalid-email'?'Invalid email format':
+              err.message;
+      showToast(msg);
+    });
 }
 function doGuest(){currentUser={name:'Guest',email:'guest@nexustrader.in'};currentPlan='Free';launchApp();}
 function doSignup(){
   var n=document.getElementById('sn').value.trim(),e=document.getElementById('se').value.trim(),p=document.getElementById('sp').value.trim();
   if(!n||!e||!p){showToast('Fill all fields');return;}
-  currentUser={name:n,email:e};currentPlan=selectedPlan;launchApp();
+  if(p.length<6){showToast('Password must be at least 6 characters');return;}
+  var btn=event.target;btn.textContent='Creating account...';btn.disabled=true;
+  auth.createUserWithEmailAndPassword(e,p)
+    .then(function(cred){
+      var u=cred.user;
+      // Save the display name
+      return u.updateProfile({displayName:n}).then(function(){
+        localStorage.setItem('plan_'+u.uid,selectedPlan);
+        currentUser={name:n,email:u.email,uid:u.uid};
+        currentPlan=selectedPlan;
+        showToast('Account created! Welcome to NEXUS!');
+        launchApp();
+      });
+    })
+    .catch(function(err){
+      btn.textContent='Create Account →';btn.disabled=false;
+      var msg=err.code==='auth/email-already-in-use'?'Email already registered — sign in instead':
+              err.code==='auth/weak-password'?'Password too weak (min 6 chars)':
+              err.code==='auth/invalid-email'?'Invalid email format':
+              err.message;
+      showToast(msg);
+    });
 }
-function doLogout(){document.getElementById('app').classList.remove('show');document.getElementById('splash').style.display='flex';currentUser=null;}
+function doLogout(){
+  auth.signOut().then(function(){
+    document.getElementById('app').classList.remove('show');
+    document.getElementById('splash').style.display='flex';
+    currentUser=null;
+    showToast('Signed out');
+  });
+}
+
+/* ═══ GOOGLE SIGN-IN ═══ */
+function doGoogle(){
+  var provider=new firebase.auth.GoogleAuthProvider();
+  showToast('Opening Google sign-in...');
+  auth.signInWithPopup(provider)
+    .then(function(result){
+      var u=result.user;
+      currentUser={name:u.displayName||u.email.split('@')[0],email:u.email,uid:u.uid};
+      // New Google users default to Free plan
+      currentPlan=localStorage.getItem('plan_'+u.uid)||'Free';
+      if(!localStorage.getItem('plan_'+u.uid))localStorage.setItem('plan_'+u.uid,'Free');
+      showToast('Welcome, '+currentUser.name+'!');
+      launchApp();
+    })
+    .catch(function(err){
+      var msg=err.code==='auth/popup-closed-by-user'?'Sign-in cancelled':
+              err.code==='auth/popup-blocked'?'Popup blocked — allow popups and retry':
+              err.message;
+      showToast(msg);
+    });
+}
 
 /* ═══ LAUNCH ═══ */
 function launchApp(){
@@ -989,7 +1062,6 @@ function goScr(s){
   if(s==='chart')loadTV(sel.tv);
   if(s==='ai')checkKeyUI();
   if(s==='bot')buildStratGrid();
-  if(s==='signals')loadDemo();
   if(s==='portfolio')buildHoldings();
 }
 
@@ -1007,25 +1079,6 @@ function buildHoldings(){
   }).join('');
 }
 
-/* ═══ SIGNALS ═══ */
-function loadDemo(){
-  if(sigLoaded)return;sigLoaded=true;
-  var gp=prices['XAU/USD']||4080,bp=prices['BTC/USD']||67420,np=prices['NVDA']||875;
-  var sigs=[
-    {sym:'XAUUSD',ico:'🥇',sig:'BUY', score:8,entry:gp.toFixed(2),sl:(gp-35).toFixed(2),tp:(gp+65).toFixed(2),rsi:58.2,tf:'1H',time:'Live'},
-    {sym:'BTCUSD',ico:'🟠',sig:'SELL',score:7,entry:bp.toFixed(0),sl:(bp+800).toFixed(0),tp:(bp-2100).toFixed(0),rsi:72.1,tf:'4H',time:'Live'},
-    {sym:'NVDA',  ico:'🟢',sig:'BUY', score:6,entry:np.toFixed(2),sl:(np-25).toFixed(2),tp:(np+45).toFixed(2),rsi:61.4,tf:'1D',time:'Live'},
-    {sym:'EURUSD',ico:'🔵',sig:'HOLD',score:4,entry:'1.0742',sl:'—',tp:'—',rsi:44.8,tf:'1H',time:'Live'},
-  ];
-  document.getElementById('sigCnt').textContent=sigs.length+' Active';
-  document.getElementById('sigFeed').innerHTML=sigs.map(function(s){
-    var cls=s.sig==='BUY'?'buy':s.sig==='SELL'?'sell':'hold';
-    return '<div class="sigcard"><div class="sc-top"><div class="sc-ico">'+s.ico+'</div><div><div class="sc-sym">'+s.sym+'</div><div class="sc-tf">'+s.tf+' · AI Confluence</div></div><div class="sc-sig '+cls+'">'+s.sig+'</div></div>'
-      +'<div class="cbar"><div class="cfill" style="width:'+Math.round(s.score/9*100)+'%"></div></div>'
-      +'<div class="sc-stats"><div class="scst"><div class="scst-l">Entry</div><div class="scst-v">'+s.entry+'</div></div><div class="scst"><div class="scst-l">Stop Loss</div><div class="scst-v dn">'+s.sl+'</div></div><div class="scst"><div class="scst-l">Take Profit</div><div class="scst-v up">'+s.tp+'</div></div><div class="scst"><div class="scst-l">RSI</div><div class="scst-v">'+s.rsi+'</div></div></div>'
-      +'<div class="sc-foot"><div class="sc-score">Confluence: <b>'+s.score+'/9</b></div><div class="sc-time">'+s.time+'</div></div></div>';
-  }).join('');
-}
 
 /* ═══ AI CHAT ═══ */
 function sysP(){
@@ -1202,30 +1255,42 @@ async function pollDashboard(){
       else{track.classList.remove('on');lbl.textContent='BOT OFF';lbl.className='tog-lbl';dot.classList.remove('live');}
     }
 
-    // MT5 account info (real data from EA)
+    // MT5 account info (real data from EA) + LIVE floating P&L
+    var liveFloatingPnl=0, hasLive=false;
     if(d.mt5){
       var st=document.getElementById('bstTxt');
       if(d.mt5.status==='CONNECTED'){
+        var bal=parseFloat(d.mt5.balance||0);
+        var eq=parseFloat(d.mt5.equity||0);
         document.getElementById('baAcct').textContent=d.mt5.symbol||'XAUUSD';
-        document.getElementById('baBal').textContent='$'+parseFloat(d.mt5.balance||0).toFixed(2);
-        document.getElementById('baEq').textContent='$'+parseFloat(d.mt5.equity||0).toFixed(2);
+        document.getElementById('baBal').textContent='$'+bal.toFixed(2);
+        document.getElementById('baEq').textContent='$'+eq.toFixed(2);
+        // LIVE floating P&L = equity - balance (updates in real-time while trades open!)
+        if(bal>0){liveFloatingPnl=eq-bal;hasLive=true;}
         if(st&&!botOn)st.textContent='MT5 Connected — bot OFF';
+        else if(st&&botOn)st.textContent='Bot ACTIVE — Claude AI trading on MT5';
       } else {
         if(st)st.textContent='MT5 Disconnected — open MetaTrader 5';
       }
     }
 
-    // Performance stats (real bot trades)
+    // TODAY P&L — show LIVE floating P&L (equity-balance), updates every poll!
+    var tpnl=document.getElementById('baPnl');
+    if(tpnl && hasLive){
+      tpnl.textContent=(liveFloatingPnl>=0?'+$':'−$')+Math.abs(liveFloatingPnl).toFixed(2);
+      tpnl.className='ba-v '+(liveFloatingPnl>=0?'up':'dn');
+    }
+
+    // Performance stats (closed trades from bot)
     if(d.stats){
       document.getElementById('pTrades').textContent=d.stats.totalTrades||0;
       var wr=d.stats.totalTrades>0?Math.round((d.stats.wins/d.stats.totalTrades)*100):0;
       document.getElementById('pWin').textContent=wr+'%';
       document.getElementById('pWin').className='perf-v '+(wr>=50?'up':'dn');
-      var pnl=d.stats.totalPnl||0;
+      // Bottom P&L card = LIVE floating if trades open, else closed total
+      var pnl=hasLive && Math.abs(liveFloatingPnl)>0.01 ? liveFloatingPnl : (d.stats.totalPnl||0);
       document.getElementById('pPnl').textContent=(pnl>=0?'+$':'−$')+Math.abs(pnl).toFixed(2);
       document.getElementById('pPnl').className='perf-v '+(pnl>=0?'up':'dn');
-      var tpnl=document.getElementById('baPnl');
-      if(tpnl){tpnl.textContent=(pnl>=0?'+$':'−$')+Math.abs(pnl).toFixed(2);tpnl.className='ba-v '+(pnl>=0?'up':'dn');}
     }
 
     // Live trades list (real MT5 trades)
@@ -1296,6 +1361,16 @@ function copyHook(){
 }
 
 const RAILWAY_URL='https://nexus-trader-production-0fb3.up.railway.app';
+
+/* ═══ AUTO-LOGIN: remember users when they return ═══ */
+auth.onAuthStateChanged(function(user){
+  if(user && !currentUser){
+    // User is already logged in from before — skip login screen
+    currentUser={name:user.displayName||user.email.split('@')[0],email:user.email,uid:user.uid};
+    currentPlan=localStorage.getItem('plan_'+user.uid)||'Free';
+    launchApp();
+  }
+});
 
 function initBot(){
   buildStratGrid();

@@ -401,8 +401,21 @@ app.listen(PORT, () => {
   console.log(`║  Claude AI: ${CLAUDE_KEY ? '✅ Connected' : '⚠️ No key — using indicators'}    ║`);
   console.log('╚══════════════════════════════════════════╝');
   console.log('');
-  // Generate first signal on startup
-  setTimeout(() => generateSmartSignal('XAUUSD'), 3000);
+  // Seed price history FAST on startup — grab 10 samples quickly so bot works sooner
+  (async () => {
+    for (let i = 0; i < 10; i++) {
+      try {
+        const b = await fetchData('https://api.gold-api.com/price/XAU');
+        if (b && b.price) {
+          const p = parseFloat(b.price);
+          if (p && !isNaN(p)) { lastGoodPrice = p; priceHistory.push(p); }
+        }
+      } catch(e) {}
+      await new Promise(r => setTimeout(r, 1500)); // 1.5s between seed samples
+    }
+    console.log('🌱 Seeded price history with', priceHistory.length, 'samples');
+    generateSmartSignal('XAUUSD');
+  })();
 
   // Background price collector — samples gold price every 30s to build indicator history
   // This runs independently so we always have data even when Twelve Data candles are rate-limited
@@ -429,5 +442,5 @@ app.listen(PORT, () => {
         if (priceHistory.length % 10 === 0) console.log('📈 Price history:', priceHistory.length, 'samples | latest $' + p.toFixed(2));
       }
     } catch(e) { console.log('Price collector error:', e.message); }
-  }, 30000); // every 30 seconds
+  }, 10000); // every 10 seconds — builds history 3x faster
 });

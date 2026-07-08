@@ -118,8 +118,12 @@ a{color:inherit;text-decoration:none}
 [data-reveal].in{opacity:1;transform:none}
 
 /* ---------- come alive video ---------- */
+.alive-stage{position:relative}
+.alive-stage.pin{height:300vh}
 .alive{position:relative;padding:0}
-.alive-frame{position:relative;height:88svh;min-height:520px;overflow:hidden;background:var(--char)}
+.alive-stage.pin .alive{position:sticky;top:0}
+.alive-frame{position:relative;height:100svh;min-height:520px;overflow:hidden;background:var(--char)}
+.alive-stage.pin .alive-frame{height:100vh}
 .alive-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
 .alive-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,11,.6),rgba(10,10,11,.15) 40%,rgba(10,10,11,.85))}
 .alive-copy{position:absolute;z-index:2;left:0;right:0;bottom:8%;text-align:center;padding:0 24px}
@@ -259,6 +263,23 @@ a{color:inherit;text-decoration:none}
  </div>
 </section>
 
+<!-- COME ALIVE (pinned scroll) -->
+<section class="alive-stage" id="experience">
+ <div class="alive">
+  <div class="alive-frame">
+    <video id="aliveV" muted playsinline loop preload="auto">
+      <source src="clothes.mp4" type="video/mp4">
+    </video>
+    <div class="alive-scrim"></div>
+    <div class="alive-copy" id="aliveCopy">
+      <span class="eyebrow" style="justify-content:center">Step inside</span>
+      <h2 class="serif">Watch the collection come alive.</h2>
+      <p>Racks that run floor to ceiling — folded, pressed and ready for their moment.</p>
+    </div>
+  </div>
+ </div>
+</section>
+
 <!-- MARQUEE -->
 <div class="marquee" aria-hidden="true">
   <div class="marquee-t">
@@ -266,21 +287,6 @@ a{color:inherit;text-decoration:none}
     <span>Sherwani</span><span>Indo-Western</span><span>Blazers</span><span>Groom Safa</span><span>Premium Shirts</span><span>Branded Tees</span><span>Denim</span><span>Kurta</span><span>Everyday Casuals</span>
   </div>
 </div>
-
-<!-- COME ALIVE -->
-<section class="alive" id="experience">
-  <div class="alive-frame">
-    <video id="aliveV" muted playsinline loop preload="metadata">
-      <source src="clothes.mp4" type="video/mp4">
-    </video>
-    <div class="alive-scrim"></div>
-    <div class="alive-copy" data-reveal>
-      <span class="eyebrow" style="justify-content:center">Step inside</span>
-      <h2 class="serif">Watch the collection come alive.</h2>
-      <p>Racks that run floor to ceiling — folded, pressed and ready for their moment.</p>
-    </div>
-  </div>
-</section>
 
 <!-- COLLECTIONS -->
 <section class="section" id="collections">
@@ -433,50 +439,55 @@ a{color:inherit;text-decoration:none}
   }
   window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
-  // HERO: pin the hero and play the walk-in as you scroll (desktop); smooth loop on mobile
-  var hv = document.getElementById('heroV'), hbg = document.getElementById('heroBg');
-  var stage = document.getElementById('top');
-  var heroIn = document.querySelector('.hero-in');
-  if(hv){
-    hv.addEventListener('loadeddata', function(){ if(hbg) hbg.classList.add('ready'); });
-    hv.addEventListener('error', function(){ if(hbg) hbg.classList.add('ready'); });
-
+  // ---- Cinematic pinned scroll: both videos play as you scroll, then content appears ----
+  function pinScrub(video, stage, copy, bg, revealBg){
+    if(!video) return;
+    if(bg) video.addEventListener('loadeddata', function(){ bg.classList.add(revealBg); });
+    if(bg) video.addEventListener('error', function(){ bg.classList.add(revealBg); });
     if(desktop && !reduce){
-      // pin the hero over a tall runway, scrub the video smoothly with easing
       if(stage) stage.classList.add('pin');
-      hv.removeAttribute('autoplay'); hv.removeAttribute('loop'); hv.pause();
+      video.removeAttribute('autoplay'); video.removeAttribute('loop'); video.pause();
       var dur = 0, target = 0, cur = 0, raf = false;
-      hv.addEventListener('loadedmetadata', function(){ dur = hv.duration || 8; });
-      function computeTarget(){
+      video.addEventListener('loadedmetadata', function(){ dur = video.duration || 8; });
+      function compute(){
         if(!dur || !stage) return;
         var rect = stage.getBoundingClientRect();
         var total = stage.offsetHeight - window.innerHeight;
         var p = Math.min(1, Math.max(0, (-rect.top) / (total || 1)));
         target = p * (dur - 0.05);
-        if(heroIn) heroIn.style.opacity = String(1 - Math.max(0,(p-0.75)/0.25)); // fade text near end
+        if(copy) copy.style.opacity = String(1 - Math.max(0, (p - 0.8) / 0.2)); // fade text near end
         if(!raf){ raf = true; requestAnimationFrame(tick); }
       }
       function tick(){
-        cur += (target - cur) * 0.18;           // easing = buttery scrub, no stutter
+        cur += (target - cur) * 0.18;          // easing = buttery scrub, no stutter
         if(Math.abs(target - cur) < 0.004){ cur = target; raf = false; }
         else { requestAnimationFrame(tick); }
-        try{ hv.currentTime = cur; }catch(e){}
+        try{ video.currentTime = cur; }catch(e){}
       }
-      window.addEventListener('scroll', computeTarget, {passive:true});
-      hv.addEventListener('loadeddata', computeTarget);
-      computeTarget();
+      window.addEventListener('scroll', compute, {passive:true});
+      video.addEventListener('loadeddata', compute);
+      compute();
     } else {
-      hv.play().catch(function(){});          // mobile / reduced-motion: simple smooth loop
+      // mobile / reduced-motion: play smoothly when the section is on screen
+      if('IntersectionObserver' in window){
+        new IntersectionObserver(function(en){
+          en.forEach(function(e){ e.isIntersecting ? video.play().catch(function(){}) : video.pause(); });
+        }, {threshold:.25}).observe(video);
+      } else { video.play&&video.play().catch(function(){}); }
     }
   }
 
-  // clothes video autoplay when in view
-  var av = document.getElementById('aliveV');
-  if(av && 'IntersectionObserver' in window){
-    new IntersectionObserver(function(en){
-      en.forEach(function(e){ e.isIntersecting ? av.play().catch(function(){}) : av.pause(); });
-    },{threshold:.3}).observe(av);
-  } else if(av){ av.setAttribute('autoplay',''); av.play&&av.play().catch(function(){}); }
+  // Stage 1: entry walk-in
+  pinScrub(document.getElementById('heroV'),
+           document.getElementById('top'),
+           document.querySelector('.hero-in'),
+           document.getElementById('heroBg'), 'ready');
+
+  // Stage 2: clothes come alive (runs right after, one continuous animation)
+  pinScrub(document.getElementById('aliveV'),
+           document.getElementById('experience'),
+           document.getElementById('aliveCopy'),
+           null, null);
 
   // reveal on scroll
   var reveals = document.querySelectorAll('[data-reveal]');

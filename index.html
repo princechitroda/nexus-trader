@@ -571,7 +571,7 @@ html,body{
       <div class="bot-hdr">
         <div class="bot-status">
           <div class="bst-dot" id="bstDot"></div>
-          <span id="bstTxt">MT5 Disconnected</span>
+          <span id="bstTxt">Demo bot ready — paper trading</span>
         </div>
         <div class="bot-toggle-wrap" onclick="toggleBot()">
           <div class="tog-track" id="togTrack"><div class="tog-thumb"></div></div>
@@ -655,12 +655,8 @@ html,body{
           <div id="liveTrades"><div style="text-align:center;padding:20px;color:var(--muted);font-size:11px">No active trades. Start the bot to begin.</div></div>
         </div>
         <div class="bot-sec">
-          <div class="bot-sec-t">MT5 EA Webhook URL</div>
-          <div class="hook-box">
-            <span class="hook-url" id="hookUrl">http://localhost:3000/webhook</span>
-            <button class="hook-copy" onclick="copyHook()">Copy</button>
-          </div>
-          <div class="bot-note">📊 Demo mode — the bot places paper trades in your browser only. No real orders are sent and no MT5 or broker connection is used.</div>
+          <div class="bot-sec-t">How This Works</div>
+          <div class="bot-note">📊 Demo mode — the bot places paper trades in your browser on a $10,000 practice account. No real orders, no broker connection, no money at risk. Use it to test strategies and learn how they behave.</div>
         </div>
         <div style="padding:12px 14px">
           <button class="start-btn start" id="startBtn" onclick="toggleBot()">🤖 START BOT</button>
@@ -671,9 +667,9 @@ html,body{
     <div class="scr" id="s-portfolio">
       <div class="portscr">
         <div class="phero">
-          <div class="plbl">Live Account Value (MT5)</div>
+          <div class="plbl">Demo Account Value</div>
           <div class="pval">—</div>
-          <div class="ppnl up">Connect MT5 to see live P&L</div>
+          <div class="ppnl up">Start the bot to see live demo P&L</div>
           <div class="pstats">
             <div class="pst"><div class="pst-l">Win Rate</div><div class="pst-v">0%</div></div>
             <div class="pst"><div class="pst-l">Trades</div><div class="pst-v">0</div></div>
@@ -1209,56 +1205,53 @@ function goScr(s){
 /* ═══ PORTFOLIO ═══ */
 var portfolioData={balance:0,equity:0,trades:[],stats:{totalTrades:0,wins:0,losses:0,totalPnl:0}};
 function buildHoldings(){
-  // Pull REAL data from MT5 dashboard (populated by pollDashboard)
-  var d=portfolioData;
-  var floatingPnl=(d.equity&&d.balance)?(d.equity-d.balance):0;
-  var totalVal=d.equity||d.balance||0;
+  // Demo account data — driven by the in-browser paper-trading engine
+  var D=NX_DEMO;
+  var floatingPnl=D.openPnl();
+  var totalVal=D.balance+floatingPnl;
 
-  // Update hero with real numbers
   var heroVal=document.querySelector('.pval');
   var heroPnl=document.querySelector('.ppnl');
   if(heroVal)heroVal.textContent='$'+totalVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   if(heroPnl){
-    var pctBase=d.balance||1;
-    var pct=(floatingPnl/pctBase*100);
+    var pct=(floatingPnl/(D.balance||1))*100;
     heroPnl.textContent=(floatingPnl>=0?'▲ +$':'▼ −$')+Math.abs(floatingPnl).toFixed(2)+' ('+(floatingPnl>=0?'+':'')+pct.toFixed(2)+'%) Open P&L';
     heroPnl.className='ppnl '+(floatingPnl>=0?'up':'dn');
   }
-  // Update hero stats with real bot stats
-  var st=d.stats||{};
-  var wr=st.totalTrades>0?Math.round((st.wins/st.totalTrades)*100):0;
+
+  var total=D.trades.length;
+  var wr=total?Math.round((D.wins/total)*100):0;
+  var net=D.balance-D.base;
   var pstats=document.querySelectorAll('.pst-v');
   if(pstats.length>=3){
     pstats[0].textContent=wr+'%';pstats[0].className='pst-v '+(wr>=50?'up':'dn');
-    pstats[1].textContent=st.totalTrades||0;
-    pstats[2].textContent=(st.totalPnl>=0?'+$':'−$')+Math.abs(st.totalPnl||0).toFixed(0);
-    pstats[2].className='pst-v '+((st.totalPnl||0)>=0?'up':'dn');
+    pstats[1].textContent=total;
+    pstats[2].textContent=(net>=0?'+$':'−$')+Math.abs(net).toFixed(0);
+    pstats[2].className='pst-v '+(net>=0?'up':'dn');
   }
 
-  // Build open positions list from REAL MT5 trades
-  var trades=d.trades||[];
-  var openTrades=trades.filter(function(t){return t.status!=='CLOSED';});
-  if(openTrades.length===0){
-    document.getElementById('holdings').innerHTML='<div class="psec-t">Open Positions</div>'
+  var box=document.getElementById('holdings');
+  if(!box)return;
+  if(!D.pos){
+    box.innerHTML='<div class="psec-t">Open Positions</div>'
       +'<div style="text-align:center;padding:32px 16px;color:var(--muted)">'
       +'<div style="font-size:32px;margin-bottom:10px">📊</div>'
       +'<div style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;margin-bottom:6px">No Open Positions</div>'
-      +'<div style="font-size:11px;line-height:1.6">Turn the bot ON to start trading. Live positions from your MT5 account will appear here.</div>'
+      +'<div style="font-size:11px;line-height:1.6">Turn the bot ON in the Bot tab to start demo trading. Open positions will appear here.</div>'
       +'</div>';
     return;
   }
-  document.getElementById('holdings').innerHTML='<div class="psec-t">Open Positions ('+openTrades.length+')</div>'+openTrades.slice(0,10).map(function(t){
-    var isBuy=(t.action||'BUY')==='BUY';
-    var pnl=t.pnl||0;var up=pnl>=0;
-    var col=isBuy?'#00E5A0':'#FF4560';
-    var barW=Math.min(Math.abs(pnl)*2+30,95);
-    return '<div class="hcard"><div class="hico" style="background:'+(isBuy?'var(--green3)':'var(--red3)')+'">'+(isBuy?'📈':'📉')+'</div>'
-      +'<div style="flex:1"><div class="hnm">'+(t.symbol||'XAUUSD')+'</div>'
-      +'<div class="hsub">'+(t.action||'BUY')+' '+(t.lot||'0.01')+' lot @ '+parseFloat(t.price||0).toFixed(2)+'</div>'
-      +'<div class="hbar"><div class="hbar-f" style="width:'+barW+'%;background:'+col+'"></div></div></div>'
-      +'<div class="hright"><div class="hval">$'+parseFloat(t.price||0).toFixed(2)+'</div>'
-      +'<div class="hpnl '+(up?'up':'dn')+'">'+(up?'+$':'−$')+Math.abs(pnl).toFixed(2)+'</div></div></div>';
-  }).join('');
+  var isBuy=D.pos.side==='buy';
+  var col=isBuy?'#00E5A0':'#FF4560';
+  var up=floatingPnl>=0;
+  var barW=Math.min(Math.abs(floatingPnl)*2+30,95);
+  box.innerHTML='<div class="psec-t">Open Positions (1)</div>'
+    +'<div class="hcard"><div class="hico" style="background:'+(isBuy?'var(--green3)':'var(--red3)')+'">'+(isBuy?'📈':'📉')+'</div>'
+    +'<div style="flex:1"><div class="hnm">'+D.sym+'</div>'
+    +'<div class="hsub">'+(isBuy?'BUY':'SELL')+' '+D.pos.lot+' lot @ '+D.pos.entry.toFixed(D.dp)+'</div>'
+    +'<div class="hbar"><div class="hbar-f" style="width:'+barW+'%;background:'+col+'"></div></div></div>'
+    +'<div class="hright"><div class="hval">'+D.price.toFixed(D.dp)+'</div>'
+    +'<div class="hpnl '+(up?'up':'dn')+'">'+(up?'+$':'−$')+Math.abs(floatingPnl).toFixed(2)+'</div></div></div>';
 }
 
 
@@ -1387,7 +1380,7 @@ function pickStrat(id){
 
 /* ═══ NEXUS DEMO PAPER-TRADING ENGINE (in-browser · no MT5 · no Railway) ═══ */
 var NX_DEMO={
-  candles:[],price:0,pos:null,balance:10000,start:10000,trades:[],wins:0,timer:null,formTicks:0,
+  candles:[],price:0,pos:null,balance:10000,base:10000,trades:[],wins:0,timer:null,formTicks:0,
   dp:2,sym:'XAU/USD',TPC:6,SHORT:5,LONG:18,_t:0,
   randn:function(){var u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);},
   avg:function(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;},
@@ -1400,7 +1393,7 @@ var NX_DEMO={
     this.price=p;
   },
   next:function(){if(Math.random()<0.03)this._t=(Math.random()-0.5)*1.6;return this.price+this._t*this.price*0.00018+this.randn()*(this.price*0.00055);},
-  start:function(){this.seed();this.balance=10000;this.start=10000;this.pos=null;this.trades=[];this.wins=0;var self=this;clearInterval(this.timer);this.timer=setInterval(function(){self.tick();},800);this.render();},
+  start:function(){this.seed();this.balance=10000;this.base=10000;this.pos=null;this.trades=[];this.wins=0;var self=this;clearInterval(this.timer);this.timer=setInterval(function(){self.tick();},800);this.render();},
   stop:function(){clearInterval(this.timer);this.timer=null;this.render();},
   tick:function(){
     var next=this.next();this.price=next;var last=this.candles[this.candles.length-1];
@@ -1425,7 +1418,7 @@ var NX_DEMO={
   close:function(exit){var p=this.pos;if(!p)return;var dir=p.side==='buy'?1:-1,pnl=(exit-p.entry)*p.units*dir;this.balance+=pnl;if(pnl>=0)this.wins++;this.trades.unshift({side:p.side,entry:p.entry,exit:exit,pnl:pnl,lot:p.lot});this.pos=null;},
   openPnl:function(){if(!this.pos)return 0;var d=this.pos.side==='buy'?1:-1;return (this.price-this.pos.entry)*this.pos.units*d;},
   render:function(){
-    var o=this.openPnl(),total=this.trades.length,wr=total?Math.round(this.wins/total*100):0,net=this.balance-this.start;
+    var o=this.openPnl(),total=this.trades.length,wr=total?Math.round(this.wins/total*100):0,net=this.balance-this.base;
     var set=function(id,txt,cls){var el=document.getElementById(id);if(el){el.textContent=txt;if(cls!==undefined)el.className=cls;}};
     set('baAcct',this.sym+' · Demo');set('baBal','$'+this.fmt(this.balance,2));set('baEq','$'+this.fmt(this.balance+o,2));
     set('baPnl',(net>=0?'+$':'−$')+this.fmt(Math.abs(net),2),'ba-v '+(net>=0?'up':'dn'));
@@ -1443,6 +1436,7 @@ var NX_DEMO={
         +'<span style="color:'+(w?'#00E5A0':'#FF4560')+';font-weight:700">'+(w?'+$':'−$')+this.fmt(Math.abs(t.pnl),2)+'</span></div>';}
     if(!html)html='<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px">No active trades. Start the bot to begin.</div>';
     lt.innerHTML=html;
+    var ps=document.getElementById('s-portfolio');if(ps&&ps.classList.contains('on'))buildHoldings();
   }
 };
 
@@ -1627,13 +1621,11 @@ auth.onAuthStateChanged(function(user){
 
 function initBot(){
   buildStratGrid();
-  document.getElementById('hookUrl').textContent=RAILWAY_URL+'/webhook';
   try{
     fetchLiveSignal();
     setInterval(fetchLiveSignal,30000);
-    pollDashboard();
-    setInterval(pollDashboard,8000);
   }catch(e){}
+  NX_DEMO.render();
 }
 
 async function fetchLiveSignal(){

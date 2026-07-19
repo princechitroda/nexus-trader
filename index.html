@@ -198,11 +198,7 @@ svg{display:block}
 
 .astrip{display:flex;gap:16px;overflow-x:auto;padding:12px 16px;scrollbar-width:none}
 .astrip::-webkit-scrollbar{display:none}
-.ai{flex:none;cursor:pointer;padding:2px 0;opacity:.6;transition:.16s;min-width:64px}
-.ai:hover{opacity:.9}
-.ai.on{opacity:1}
-.ai .sym,.ai>div:first-child{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.05em}
-.ai .prc{font-family:var(--mono);font-size:12.5px;margin-top:2px}
+
 
 .chdr{display:flex;align-items:flex-start;justify-content:space-between;
   gap:14px;padding:16px 16px 12px;border-top:1px solid var(--rule)}
@@ -412,9 +408,19 @@ svg{display:block}
 .out{color:var(--loss)!important}
 
 .acls,.acon{display:flex;flex-direction:column;gap:9px}
-.ac-c{background:var(--deck);border:1px solid var(--rule);border-radius:13px;padding:16px}
-.ac-p{font-family:var(--mono);font-weight:600;font-size:19px;color:var(--marigold)}
-.ac-s{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.6}
+/* asset strip — real selectable cards */
+.ac{flex:none;min-width:114px;background:var(--deck);border:1px solid var(--rule);
+  border-radius:12px;padding:11px 13px;cursor:pointer;transition:.16s}
+.ac:hover{border-color:var(--rule2);transform:translateY(-1px)}
+.ac.on{border-color:var(--marigold);background:var(--marigold-dim);
+  box-shadow:0 0 0 1px var(--marigold) inset}
+.ac-s{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.09em;
+  color:var(--muted);display:flex;align-items:center}
+.ac.on .ac-s{color:var(--marigold)}
+.ac-p{font-family:var(--mono);font-weight:600;font-size:15px;color:var(--paper);
+  margin-top:5px;letter-spacing:-.01em}
+.ac-c{font-family:var(--mono);font-size:11px;margin-top:3px}
+.ac-c.up{color:var(--gain)} .ac-c.dn{color:var(--loss)}
 
 /* ══ TOAST ═════════════════════════════════════════════════ */
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);
@@ -461,6 +467,18 @@ svg{display:block}
 .nx-mark{width:24px;height:24px;color:var(--marigold);flex:none}
 .nx-mark-lg{width:46px;height:46px;margin:0 auto 16px;display:block}
 .s-logo{display:flex;flex-direction:column;align-items:center}
+
+.nx-chart-card{margin:16px;background:var(--deck);border:1px solid var(--rule);border-radius:13px;padding:14px}
+.nx-chart-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.nx-chart-sym{font-family:var(--disp);font-weight:700;font-size:14px}
+.nx-chart-px{font-family:var(--mono);font-weight:600;font-size:18px;margin-left:9px;letter-spacing:-.01em}
+.nx-chart-pos{font-family:var(--mono);font-size:11px;color:var(--faint)}
+#botChart{width:100%;height:285px;display:block;margin-top:8px}
+.nx-legend{display:flex;gap:15px;flex-wrap:wrap;align-items:center;margin-top:11px;
+  font-family:var(--mono);font-size:10px;color:var(--faint)}
+.nx-legend i{display:inline-block;width:11px;height:2px;margin-right:5px;vertical-align:middle}
+.nx-feed{margin-left:auto;padding:3px 9px;border:1px solid var(--rule);border-radius:5px;color:var(--muted)}
+@media(max-width:640px){#botChart{height:225px}.nx-chart-card{margin:12px}}
 </style>
 </head>
 <body>
@@ -598,7 +616,20 @@ svg{display:block}
         </div>
       </div>
       <div class="bot-scr">
-      <div class="nx-tape">
+      <div class="nx-chart-card">
+          <div class="nx-chart-hd">
+            <div><span class="nx-chart-sym" id="botSym">XAU/USD</span><span class="nx-chart-px" id="botPx">—</span></div>
+            <span class="nx-chart-pos" id="botPos">flat — waiting for signal</span>
+          </div>
+          <canvas id="botChart"></canvas>
+          <div class="nx-legend">
+            <span><i style="background:var(--paper)"></i>Entry</span>
+            <span><i style="background:var(--loss)"></i>Stop loss</span>
+            <span><i style="background:var(--gain)"></i>Take profit</span>
+            <span class="nx-feed">practice feed · simulated prices</span>
+          </div>
+        </div>
+        <div class="nx-tape">
           <div class="nx-tape-hd">
             <span class="nx-tape-t">Practice record</span>
             <span class="nx-tape-n" id="tapeN">no trades yet</span>
@@ -1224,7 +1255,7 @@ function goScr(s){
   var nv=document.getElementById('nv-'+s);if(nv)nv.classList.add('on');
   if(s==='chart')loadTV(sel.tv);
   if(s==='ai')checkKeyUI();
-  if(s==='bot')buildStratGrid();
+  if(s==='bot'){buildStratGrid();setTimeout(function(){sizeBotChart();drawBotChart();},30);}
   if(s==='portfolio')buildHoldings();
 }
 
@@ -1405,6 +1436,81 @@ function pickStrat(id){
 }
 
 
+/* ═══ BOT CHART — live candles with entry / SL / TP ═══ */
+function sizeBotChart(){
+  var cv=document.getElementById('botChart'); if(!cv)return;
+  var dpr=window.devicePixelRatio||1, r=cv.getBoundingClientRect();
+  if(!r.width)return;
+  cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr);
+  cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+}
+function drawBotChart(){
+  var cv=document.getElementById('botChart'); if(!cv)return;
+  var r=cv.getBoundingClientRect(), W=r.width, H=r.height; if(!W||!H)return;
+  var dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(W*dpr))sizeBotChart();
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var D=NX_DEMO, all=D.candles; if(!all.length)return;
+  var VIS=48, vis=all.slice(-VIS), n=vis.length;
+  var padL=8,padR=68,padT=12,padB=8;
+  var min=Infinity,max=-Infinity;
+  vis.forEach(function(c){min=Math.min(min,c.l);max=Math.max(max,c.h);});
+  min=Math.min(min,D.price); max=Math.max(max,D.price);
+  if(D.pos){min=Math.min(min,D.pos.sl,D.pos.tp);max=Math.max(max,D.pos.sl,D.pos.tp);}
+  var pad=(max-min)*0.09||1; min-=pad; max+=pad;
+  function X(i){return padL+(n<=1?0:(i/(n-1))*(W-padL-padR));}
+  function Y(p){return padT+(1-(p-min)/(max-min))*(H-padT-padB);}
+  function hline(y,color,label){
+    ctx.strokeStyle=color;ctx.setLineDash([3,4]);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=color;ctx.font='9px "IBM Plex Mono",monospace';ctx.fillText(label,W-padR+5,y+3);
+  }
+  var cw=Math.max(2.5,(W-padL-padR)/n*0.6);
+  ctx.strokeStyle='rgba(255,255,255,.045)';ctx.lineWidth=1;
+  [0.25,0.5,0.75].forEach(function(g){var y=padT+g*(H-padT-padB);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();});
+  for(var i=0;i<n;i++){
+    var c=vis[i],up=c.c>=c.o,col=up?'#56B489':'#E0574B',x=X(i);
+    ctx.strokeStyle=col;ctx.globalAlpha=.85;ctx.beginPath();ctx.moveTo(x,Y(c.h));ctx.lineTo(x,Y(c.l));ctx.stroke();
+    var yO=Y(c.o),yC=Y(c.c),top=Math.min(yO,yC),bh=Math.max(1.5,Math.abs(yC-yO));
+    ctx.globalAlpha=up?.92:.88;ctx.fillStyle=col;ctx.fillRect(x-cw/2,top,cw,bh);
+  }
+  ctx.globalAlpha=1;
+  var baseN=D.n-(n-1);
+  var tl=D.trades.slice(0,40);
+  for(var j=0;j<tl.length;j++){
+    var t=tl[j],vi=t.openN-baseN; if(vi<0||vi>=n)continue;
+    var mx=X(vi),my=Y(t.entry),buy=t.side==='buy',mc=buy?'#56B489':'#E0574B';
+    ctx.fillStyle=mc;ctx.globalAlpha=.85;ctx.beginPath();
+    if(buy){ctx.moveTo(mx,my+11);ctx.lineTo(mx-4,my+19);ctx.lineTo(mx+4,my+19);}
+    else{ctx.moveTo(mx,my-11);ctx.lineTo(mx-4,my-19);ctx.lineTo(mx+4,my-19);}
+    ctx.closePath();ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  if(D.pos){
+    hline(Y(D.pos.tp),'#56B489','TP '+D.pos.tp.toFixed(D.dp));
+    hline(Y(D.pos.sl),'#E0574B','SL '+D.pos.sl.toFixed(D.dp));
+    hline(Y(D.pos.entry),'rgba(239,233,222,.8)','ENTRY '+D.pos.entry.toFixed(D.dp));
+    var evi=D.pos.openN-baseN;
+    if(evi>=0&&evi<n){ctx.strokeStyle=D.pos.side==='buy'?'#56B489':'#E0574B';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(X(evi),Y(D.pos.entry),3.5,0,6.283);ctx.stroke();}
+  }
+  var py=Y(D.price);
+  ctx.fillStyle='#F5A524';ctx.fillRect(W-padR,py-9,padR,18);
+  ctx.fillStyle='#231603';ctx.font='bold 10px "IBM Plex Mono",monospace';
+  ctx.fillText(D.price.toFixed(D.dp),W-padR+5,py+3.5);
+
+  var sym=document.getElementById('botSym'); if(sym)sym.textContent=D.sym;
+  var px=document.getElementById('botPx'); if(px)px.textContent=D.price.toFixed(D.dp);
+  var ps=document.getElementById('botPos');
+  if(ps){
+    if(!D.pos){ps.textContent='flat — waiting for signal';ps.style.color='var(--faint)';}
+    else{var o=D.openPnl(),b=D.pos.side==='buy';
+      ps.textContent=(b?'▲ LONG':'▼ SHORT')+' @ '+D.pos.entry.toFixed(D.dp)+'   '+(o>=0?'+$':'−$')+Math.abs(o).toFixed(2);
+      ps.style.color=b?'var(--gain)':'var(--loss)';}
+  }
+}
+window.addEventListener('resize',function(){sizeBotChart();drawBotChart();});
+
 function renderTape(){
   var strip=document.getElementById('tapeStrip'); if(!strip) return;
   var lbl=document.getElementById('tapeN');
@@ -1428,7 +1534,7 @@ function renderTape(){
 
 /* ═══ NEXUS DEMO PAPER-TRADING ENGINE (in-browser · no MT5 · no Railway) ═══ */
 var NX_DEMO={
-  candles:[],price:0,pos:null,balance:10000,base:10000,trades:[],wins:0,timer:null,formTicks:0,
+  candles:[],price:0,n:0,pos:null,balance:10000,base:10000,trades:[],wins:0,timer:null,formTicks:0,
   dp:2,sym:'XAU/USD',TPC:6,SHORT:5,LONG:18,_t:0,
   randn:function(){var u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);},
   avg:function(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;},
@@ -1442,15 +1548,17 @@ var NX_DEMO={
   },
   next:function(){if(Math.random()<0.03)this._t=(Math.random()-0.5)*1.6;return this.price+this._t*this.price*0.00018+this.randn()*(this.price*0.00055);},
   start:function(){this.seed();this.balance=10000;this.base=10000;this.pos=null;this.trades=[];this.wins=0;var self=this;clearInterval(this.timer);this.timer=setInterval(function(){self.tick();},800);this.render();},
-  stop:function(){clearInterval(this.timer);this.timer=null;this.render();},
+  boot:function(){if(!this.candles.length)this.seed();var self=this;clearInterval(this.timer);this.timer=setInterval(function(){self.tick();},800);this.render();},
+  stop:function(){if(this.pos)this.close(this.price);this.render();},
   tick:function(){
     var next=this.next();this.price=next;var last=this.candles[this.candles.length-1];
     last.c=next;last.h=Math.max(last.h,next);last.l=Math.min(last.l,next);this.formTicks++;
     if(this.pos){var p=this.pos;if(p.side==='buy'){if(next<=p.sl)this.close(p.sl);else if(next>=p.tp)this.close(p.tp);}else{if(next>=p.sl)this.close(p.sl);else if(next<=p.tp)this.close(p.tp);}}
-    if(this.formTicks>=this.TPC){this.formTicks=0;this.strategy();this.candles.push({o:next,h:next,l:next,c:next});if(this.candles.length>200)this.candles.shift();}
+    if(this.formTicks>=this.TPC){this.formTicks=0;this.strategy();this.candles.push({o:next,h:next,l:next,c:next});this.n++;if(this.candles.length>200)this.candles.shift();}
     this.render();
   },
   strategy:function(){
+    if(typeof botOn!=='undefined'&&!botOn)return;
     var c=this.candles.map(function(x){return x.c;});if(c.length<this.LONG+2)return;
     var sN=this.avg(c.slice(-this.SHORT)),lN=this.avg(c.slice(-this.LONG)),sP=this.avg(c.slice(-this.SHORT-1,-1)),lP=this.avg(c.slice(-this.LONG-1,-1));
     var up=sP<=lP&&sN>lN,dn=sP>=lP&&sN<lN;
@@ -1461,9 +1569,9 @@ var NX_DEMO={
   gv:function(id,def){var el=document.getElementById(id);return el?(parseFloat(el.value)||def):def;},
   open:function(side){
     var lot=this.gv('rLot',0.01),slp=this.gv('rSL',350)/100000,tpp=this.gv('rTP',650)/100000,e=this.price;
-    this.pos={side:side,entry:e,units:(lot*500000)/e,lot:lot,sl:side==='buy'?e*(1-slp):e*(1+slp),tp:side==='buy'?e*(1+tpp):e*(1-tpp)};
+    this.pos={side:side,entry:e,units:(lot*500000)/e,lot:lot,openN:this.n,sl:side==='buy'?e*(1-slp):e*(1+slp),tp:side==='buy'?e*(1+tpp):e*(1-tpp)};
   },
-  close:function(exit){var p=this.pos;if(!p)return;var dir=p.side==='buy'?1:-1,pnl=(exit-p.entry)*p.units*dir;this.balance+=pnl;if(pnl>=0)this.wins++;this.trades.unshift({side:p.side,entry:p.entry,exit:exit,pnl:pnl,lot:p.lot});this.pos=null;},
+  close:function(exit){var p=this.pos;if(!p)return;var dir=p.side==='buy'?1:-1,pnl=(exit-p.entry)*p.units*dir;this.balance+=pnl;if(pnl>=0)this.wins++;this.trades.unshift({side:p.side,entry:p.entry,exit:exit,pnl:pnl,lot:p.lot,openN:p.openN});this.pos=null;},
   openPnl:function(){if(!this.pos)return 0;var d=this.pos.side==='buy'?1:-1;return (this.price-this.pos.entry)*this.pos.units*d;},
   render:function(){
     var o=this.openPnl(),total=this.trades.length,wr=total?Math.round(this.wins/total*100):0,net=this.balance-this.base;
@@ -1485,6 +1593,7 @@ var NX_DEMO={
     if(!html)html='<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px">No active trades. Start the bot to begin.</div>';
     lt.innerHTML=html;
     renderTape();
+    drawBotChart();
     var ps=document.getElementById('s-portfolio');if(ps&&ps.classList.contains('on'))buildHoldings();
   }
 };
@@ -1674,8 +1783,9 @@ function initBot(){
     fetchLiveSignal();
     setInterval(fetchLiveSignal,30000);
   }catch(e){}
-  NX_DEMO.render();
+  NX_DEMO.boot();
   renderTape();
+  sizeBotChart();
 }
 
 async function fetchLiveSignal(){

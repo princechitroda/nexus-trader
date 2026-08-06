@@ -9,8 +9,15 @@ second independent 2012–2022 M15 dataset used for cross-checking.
 
 ## Bottom line
 
-**There is a real edge, it survives walk-forward, and it is too slow for a
-120-day challenge.**
+**No generalizable market inefficiency was found.** What survives is a gold
+long-bias with an unusually good drawdown profile — which can pass an untimed
+challenge, but is a bet on gold continuing to rise, not a discovered edge.
+
+The gold strategy clears every statistical gate below. It then fails the one test
+that distinguishes a real mechanism from a well-dressed directional bet: applied to
+eleven other symbols, the same signal has **negative** expectancy (§7). Read the
+bottom line as "this works on gold, for reasons that are probably gold's 21-year
+uptrend", not as "we found an edge".
 
 | | Result |
 |---|---|
@@ -22,9 +29,9 @@ second independent 2012–2022 M15 dataset used for cross-checking.
 | **P(pass a 120-day challenge)** | **7%** at 1% risk — do not buy one |
 | **P(pass a no-time-limit challenge)** | **79%** at 1% risk, median **320 trading days** |
 
-So: a genuine, tradeable, slow edge. It will not pass a timed challenge. It will
-probably pass an untimed one, over about fifteen months. The fix for the speed
-problem is identified and quantified in §7 — and it is not "risk more".
+So: slow, and probably beta rather than alpha. It will not pass a timed challenge.
+It would probably pass an untimed one over about fifteen months — while you carry
+gold-direction risk that no backtest statistic on this page prices for you.
 
 ---
 
@@ -199,9 +206,52 @@ Trailing-drawdown variant (harder, many newer firms): 57% at 1% risk / 500 days.
 
 ---
 
-## 7. What actually fixes the speed problem
+## 7. The test that changed the conclusion: eleven other symbols
 
-Not risk. **Frequency.** From `research/requirements.py`, P(pass phase 1, 120 days):
+The plan was to fix the frequency problem by running the same signal across many
+symbols. The Asian-range break is supposed to be a *liquidity mechanism* — a thin
+overnight session accumulating orders, a busy London session running them — and
+that structure exists in every major pair, not just gold. Ten symbols should mean
+ten times the trades.
+
+It is also, incidentally, the sharpest available out-of-sample test of whether the
+mechanism is real at all. It is not.
+
+**Same strategy, same parameters, 12 symbols, H1, 2012–2022, equal-weighted:**
+
+| | Portfolio result |
+|---|---|
+| Long-biased (the gold config) | expR **−0.006**, t = −0.59, −2.7% |
+| Both sides (the pure signal) | expR **−0.016**, t = −1.67, −10.1% |
+| Short only | expR −0.005, t = −0.33, −2.3% |
+
+Per-symbol, pure signal — only 4 of 12 positive, **none significant**:
+
+| Symbol | expR | t | | Symbol | expR | t |
+|---|---|---|---|---|---|---|
+| USDJPY | +0.044 | 1.17 | | GBPUSD | −0.031 | −2.00 |
+| AUDJPY | +0.035 | 0.84 | | USDCAD | −0.040 | −2.55 |
+| XAUUSD | +0.009 | 0.50 | | EURCHF | −0.037 | −2.66 |
+| EURJPY | +0.020 | 0.42 | | EURGBP | −0.066 | −4.37 |
+
+Mean off-diagonal daily correlation was **0.09** — diversification was excellent, so
+the portfolio machinery worked exactly as intended. It faithfully diversified a
+collection of nothing.
+
+**What this means.** A mechanism that appears in one instrument, only on one side,
+only during that instrument's 21-year bull market, is far more likely to be drift
+plus survivorship in my own hypothesis search than a structural inefficiency. The
+gold result in §5 is best read as: *a long-gold position, entered on a filter that
+happens to keep drawdowns near 6%.* That is a genuinely useful property for a
+drawdown-limited account. It is not an edge, and it will stop working the moment
+gold stops rising.
+
+Note also that the long-biased gold config *loses* on FX (−2.7%), which is what you
+would expect if its contribution were directional rather than structural.
+
+### The frequency arithmetic still stands
+
+From `research/requirements.py`, P(pass phase 1, 120 days):
 
 | | risk 0.5% | 0.75% | 1.0% | 1.5% | 2.0% |
 |---|---|---|---|---|---|
@@ -210,33 +260,35 @@ Not risk. **Frequency.** From `research/requirements.py`, P(pass phase 1, 120 da
 | **3 trades/day**, exp +0.10R | **90%** | 88% | 71% | 54% | 39% |
 
 A *feeble* +0.05R edge taken three times a day beats a strong +0.10R edge taken
-once. We currently have +0.049R at **0.35 trades/day**. The edge is fine; the
-frequency is the problem, and it is short by roughly 10×.
+once. That arithmetic is still correct and still the right target — the portfolio
+attempt above reached **128 trades/month**, comfortably past the frequency needed.
 
-**The concrete fix: run the same signal across uncorrelated symbols.** The Asian-range
-break is not gold-specific — it is a liquidity mechanism that exists in every pair
-with a thin Asian session and a busy London one. Ten symbols at 7.8 trades/month
-each gives ~78/month with imperfect correlation, which both raises frequency ~10×
-*and* smooths the equity curve. That combination is what moves a 7% timed pass rate
-into the 60–80% range.
-
-Data for eleven more pairs (EURUSD, GBPJPY, USDJPY, AUDUSD, …) is already available
-from the same source. Doing it properly needs per-symbol spread, contract size and
-pip value in the cost model — that is the next build, and it is the single highest-value
-thing left to do.
+It just had nothing to multiply. Frequency is a multiplier on edge, and 128 × 0 = 0.
+The search has to go back to finding an edge that generalizes.
 
 ---
 
 ## 8. What to do next, in order
 
-1. **Do not fund anything yet.** Nothing here has been forward-tested.
-2. **Export XAUUSD H1 from your own MT5, 2021→today**, and re-run §5. Your broker's
-   spread and candles are what you will actually trade, and the public data ends
-   June 2025. Command in the README.
-3. **Build the multi-symbol portfolio version** (§7). This is the step that could
-   turn a slow edge into a fundable one.
-4. **Then** demo-forward-test for 4–6 weeks before paying any fee.
-5. **If you buy a challenge, buy an untimed one**, and risk 1% — not 2%.
+1. **Do not fund anything yet.** Nothing here has been forward-tested, and §7 says
+   the one candidate is probably directional beta.
+2. **Decide what you actually want to bet on.** If you believe gold keeps rising,
+   the §5 strategy is a *reasonable, drawdown-controlled way to express that view*
+   on an untimed challenge — just hold it in your head as a gold bet, not an edge.
+   If you want an edge that does not depend on that, keep searching.
+3. **Export XAUUSD H1 from your own MT5, 2021→today**, and re-run §5 on your
+   broker's actual spread and candles. The public data ends June 2025.
+4. **Search where the mechanism is more likely to be structural.** The edge scan
+   found the strongest raw effects at 24–48h horizons; the obvious unexplored
+   ground is scheduled-event structure (NFP/CPI/FOMC), cross-asset conditioning
+   (DXY, real yields, SPX), and intraday seasonality that is *symmetric* rather
+   than drift-contaminated. `research/edge_scan.py` measures any new hypothesis in
+   about a minute — use it before writing another strategy.
+5. **Whatever you find, apply the §7 test to it**: if it does not work on symbols
+   other than the one it was discovered on, treat it as drift until proven
+   otherwise.
+6. **Then** demo-forward-test for 4–6 weeks before paying any fee. If you buy a
+   challenge, buy an untimed one and risk 1% — not 2%.
 
 ---
 

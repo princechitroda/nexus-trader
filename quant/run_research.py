@@ -39,7 +39,8 @@ def _rule(title: str = "") -> None:
 
 def _load(args) -> pd.DataFrame:
     if args.data:
-        df = loader.load_csv(args.data, server_tz_offset=args.server_tz, timeframe=args.timeframe)
+        df = loader.load_csv(args.data, server_tz_offset=args.server_tz,
+                             timeframe=args.timeframe, price_scale=args.price_scale)
         print(f"Loaded {len(df):,} bars from {Path(args.data).name}: {df.index[0]} → {df.index[-1]}")
         loader.validate(df, verbose=True)
         return df
@@ -302,6 +303,8 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--server-tz", type=float, default=0.0,
                         help="broker server UTC offset in hours (MT5 exports are NOT UTC)")
         sp.add_argument("--timeframe", default=None, help="resample, e.g. 15min")
+        sp.add_argument("--price-scale", type=float, default=1.0,
+                        help="divide raw prices by this (some public datasets ship 155408 for 1554.08)")
         sp.add_argument("--structured", action="store_true",
                         help="synthetic fallback: inject a known edge (control only)")
         sp.add_argument("--balance", type=float, default=100_000.0)

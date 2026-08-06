@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
-quant/data/*.csv
-quant/reports/*.csv
+data/*.csv
+data/raw/
+reports/*.csv

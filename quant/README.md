@@ -5,9 +5,10 @@ A backtesting and validation harness built to answer one question honestly:
 > **Which XAUUSD strategy is profitable enough, and stable enough, to pass a funded
 > account challenge?**
 
-It does not answer that question yet, and neither does anything else you have read
-online. It gives you the machinery to answer it with your own broker's data, and —
-more importantly — it is built to tell you when the answer is "none of them".
+**Round 1 is done and the answer was "none of them" — see [FINDINGS.md](FINDINGS.md).**
+Six strategies were tested on ten years of real XAUUSD; the best out-of-sample result
+was +1.96% over 7.5 years at t = 0.31. That write-up also contains the genuinely
+useful part: what the edge scan measured about how gold actually behaves.
 
 ---
 
@@ -17,7 +18,7 @@ Anyone who says "strategy X is profitable on gold" without showing you walk-forw
 results, costs and a trade-level distribution is selling something. Gold's edges are
 real but thin, regime-dependent, and mostly eaten by spread. The honest position is:
 
-* **Candidate strategies are hypotheses, not answers.** Five are implemented here,
+* **Candidate strategies are hypotheses, not answers.** Six are implemented here,
   each with a structural reason to exist (see below). Which ones survive on *your*
   broker's data, at *your* costs, is an empirical question.
 * **In-sample results mean nothing.** A profitable backtest over a fixed history is
@@ -51,10 +52,10 @@ progress bar.
 
 ## Getting real data — the one thing you have to do
 
-**This environment cannot reach market-data providers** (Yahoo, Dukascopy, Stooq and
-the rest are blocked by network policy), so nothing here has touched real gold prices.
-You need to supply the data, and you should want to: the right data is **your own
-broker's**, because their spread and their candles are what you will actually trade.
+Round 1 used a public 2012–2022 dataset (see the bottom of this file). **It ends in
+March 2022**, so for anything recent you need to supply data — and you should want to:
+the right data is **your own broker's**, because their spread and their candles are
+what you will actually trade.
 
 ### Export from MT5 (free, 5 minutes, best option)
 
@@ -91,7 +92,7 @@ pip install pandas numpy
 # 1. validate the engine (no data needed)
 python -m quant.run_research selftest
 
-# 2. rank all five strategies on your data
+# 2. rank all six strategies on your data
 python -m quant.run_research screen \
     --data quant/data/XAUUSD_M15.csv --server-tz 3 \
     --risk 0.5 --spread 0.30 --commission 7
@@ -108,7 +109,7 @@ single number decides several of these strategies.
 
 ---
 
-## The five candidates
+## The six candidates
 
 Each exists for a structural reason, not because it backtested well.
 
@@ -119,6 +120,7 @@ Each exists for a structural reason, not because it backtested well.
 | `trend_pullback` | Gold's real money is in multi-day macro runs (real yields, DXY). H4 trend filter, M15 pullback entry, no target — ATR trailing only. | Low win rate (~35%), fat right tail, painful drawdowns |
 | `donchian` | 40-year-old textbook breakout as a **control**. If this beats the clever systems, the clever systems are fitting. | Benchmark |
 | `sweep_reversal` | Mechanical stop-hunt: price runs the prior day's high/low, fails, closes back inside. Stop sits past proven failure, so losses are tight. | Tight loss distribution — structurally good for a drawdown-limited account |
+| `asia_break_momentum` | Built *from* the edge scan, not from intuition: the Asian-range break edge is zero intraday and accrues over 8–24h, so this holds for a day on H1 with a wide stop. | The best of the six — and still not fundable; see FINDINGS.md |
 
 `asian_fade` and `london_orb` are near-opposites by design. If both look profitable on
 the same data, at least one is fitting noise, and you have learned something.
@@ -212,3 +214,21 @@ correct outcome, and finding out for free is the entire point of building this b
 paying a challenge fee. If one survives, the next step is **not** to fund it — it is
 to forward-test on demo for 4-6 weeks and confirm the live fill quality matches the
 assumptions above.
+
+---
+
+## Getting the 10-year dataset used in FINDINGS.md
+
+The research in `FINDINGS.md` used a public MT5-derived dataset (2012–2022). It is
+not committed here — fetch it yourself:
+
+```bash
+git clone --depth 1 https://github.com/ejtraderLabs/historical-data /tmp/hist
+mkdir -p quant/data/raw && cp /tmp/hist/XAUUSD/XAUUSD{m15,h1}.csv quant/data/raw/
+```
+
+Prices ship as integers scaled ×100 (155408 = 1554.08) on an EET/EEST server clock,
+so pass `--price-scale 100 --server-tz 2`. Validation of this data against known
+gold history, and how the timezone was determined empirically, are in `FINDINGS.md`.
+
+**It ends in March 2022.** Replace it with your own MT5 export for anything recent.

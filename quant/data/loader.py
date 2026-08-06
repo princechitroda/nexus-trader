@@ -42,12 +42,15 @@ def load_csv(
     path: str | Path,
     server_tz_offset: float = 0.0,
     timeframe: str | None = None,
+    price_scale: float = 1.0,
 ) -> pd.DataFrame:
     """Load and normalise an OHLC file.
 
     `server_tz_offset` is the broker server's offset from UTC in hours. Pass e.g.
     `3.0` for a UTC+3 server and the timestamps will be shifted back to UTC.
     `timeframe` optionally resamples (e.g. '15min') after loading.
+    `price_scale` divides raw prices — several public forex datasets ship integer
+    prices (gold as 155408 rather than 1554.08); pass 100 for those.
     """
     path = Path(path)
     sep = "\t" if path.suffix.lower() in {".tsv", ".txt"} else None
@@ -77,7 +80,7 @@ def load_csv(
         col = _find_col(cols, name)
         if col is None:
             raise ValueError(f"missing '{name}' column in {path.name}; columns were {cols}")
-        out[name] = pd.to_numeric(df[col], errors="coerce").to_numpy()
+        out[name] = pd.to_numeric(df[col], errors="coerce").to_numpy() / price_scale
 
     vol_col = _find_col(cols, "volume", "tickvol", "vol")
     if vol_col:

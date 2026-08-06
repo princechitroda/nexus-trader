@@ -1,5 +1,6 @@
 """Strategy registry."""
 
+from .asia_break_momentum import AsiaBreakMomentum
 from .asian_fade import AsianRangeFade
 from .base import Strategy
 from .donchian import DonchianBreakout
@@ -13,6 +14,7 @@ REGISTRY: dict[str, type[Strategy]] = {
     "trend_pullback": TrendPullback,
     "donchian": DonchianBreakout,
     "sweep_reversal": SweepReversal,
+    "asia_break_momentum": AsiaBreakMomentum,
 }
 
 # Parameter grids for walk-forward optimisation. Kept deliberately small — a
@@ -43,9 +45,15 @@ PARAM_GRIDS: dict[str, dict] = {
         "target_r": [1.5, 2.0, 3.0],
         "confirm_bars": [2, 3, 5],
     },
+    "asia_break_momentum": {
+        "stop_atr_mult": [2.5, 5.0, 8.0],
+        "trail_atr_mult": [4.0, 6.0, None],
+        "max_bars": [16, 24, 48],
+        "vol_percentile_min": [0.0, 0.5, 0.65],
+    },
 }
 
 __all__ = [
-    "Strategy", "LondonORB", "AsianRangeFade", "TrendPullback",
+    "Strategy", "AsiaBreakMomentum", "LondonORB", "AsianRangeFade", "TrendPullback",
     "DonchianBreakout", "SweepReversal", "REGISTRY", "PARAM_GRIDS",
 ]

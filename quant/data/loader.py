@@ -18,6 +18,7 @@ the London open by two or three hours. Use `server_tz_offset` to correct it.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -68,12 +69,32 @@ def load_csv(
     else:
         stamp = df[date_col].astype(str).str.strip()
 
-    # dd.mm.yyyy (Dukascopy / MT5 European exports) needs dayfirst; ISO does not.
+    # Date-order detection. This is worth doing carefully: `2004.06.11` is
+    # yyyy.mm.dd (MT4 exports) while `11.06.2004` is dd.mm.yyyy (Dukascopy), and
+    # guessing wrong swaps month and day *only on rows where the day is <= 12* —
+    # the rest parse correctly. The result is a silently scrambled index that
+    # still looks sorted and still spans the right years.
     sample = stamp.iloc[0] if len(stamp) else ""
-    dayfirst = "." in sample.split(" ")[0]
+    date_part = sample.split(" ")[0]
+    year_first = bool(re.match(r"^\d{4}[./-]", date_part))
+    dayfirst = (not year_first) and (("." in date_part) or ("/" in date_part))
     idx = pd.to_datetime(stamp, dayfirst=dayfirst, format="mixed", utc=False, errors="coerce")
     if idx.isna().mean() > 0.02:
         raise ValueError(f"could not parse timestamps in {path.name}; sample: {sample!r}")
+
+    # Guard: a correctly parsed export that was written in chronological order
+    # must still be in chronological order after parsing. If it isn't, the
+    # day/month interpretation is almost certainly wrong.
+    parsed = pd.DatetimeIndex(idx.dropna())
+    if len(parsed) > 100:
+        backwards = (parsed.to_series().diff().dt.total_seconds() < 0).mean()
+        if backwards > 0.01:
+            raise ValueError(
+                f"{path.name}: {backwards:.1%} of parsed timestamps go backwards in file "
+                f"order, so the date format was probably misread (sample: {date_part!r}, "
+                f"parsed dayfirst={dayfirst}). Fix the parse rather than sorting over it — "
+                f"sorting hides the corruption instead of removing it."
+            )
 
     out = pd.DataFrame(index=pd.DatetimeIndex(idx))
     for name in _OHLC:

@@ -1,85 +1,109 @@
-# XAUUSD Research Findings — Round 1
+# XAUUSD Research Findings
 
-**Date:** 2026-08-06
-**Data:** 10 years real XAUUSD, 2012-05-15 → 2022-03-04 (230,400 M15 bars / 57,600 H1 bars)
+**Last updated:** 2026-08-06
+**Data:** 21 years real XAUUSD H1, 2004-06-11 → 2025-06-06 (122,028 bars), plus a
+second independent 2012–2022 M15 dataset used for cross-checking.
 **Costs assumed:** 0.30 spread, $7/lot round turn, 0.03 entry slip, 0.12 stop slip
 
 ---
 
-## Headline
+## Bottom line
 
-**No fundable edge was found. Do not buy a challenge yet.**
+**There is a real edge, it survives walk-forward, and it is too slow for a
+120-day challenge.**
 
-Six strategies were tested — five conventional, one purpose-built from measured
-structure. After realistic costs, every one of them either loses money or has an
-edge statistically indistinguishable from zero. The best out-of-sample result was
-**+1.96% over 7.5 years** with a t-statistic of **0.31**.
+| | Result |
+|---|---|
+| Out-of-sample expectancy | **+0.049R** per trade |
+| Out-of-sample t-statistic | **2.61** (clears the ≥2.0 bar) |
+| Walk-forward folds profitable | **71%** (12 of 17) |
+| OOS return / max drawdown | **6.91** (+46.0% vs 6.66% DD, 17 years) |
+| Profit from single best trade | 1% (not a lottery ticket) |
+| **P(pass a 120-day challenge)** | **7%** at 1% risk — do not buy one |
+| **P(pass a no-time-limit challenge)** | **79%** at 1% risk, median **320 trading days** |
 
-This is a useful result, not a failed project. It cost nothing and it has probably
-saved several challenge fees. What follows is what the data actually says, which
-is considerably more interesting than the headline.
+So: a genuine, tradeable, slow edge. It will not pass a timed challenge. It will
+probably pass an untimed one, over about fifteen months. The fix for the speed
+problem is identified and quantified in §7 — and it is not "risk more".
 
 ---
 
-## 1. The data is real and it checks out
+## 1. Two independent datasets, both validated against known gold history
 
-Sourced from a public MT5-derived dataset. Every anchor matches known gold history:
-
-| Event | Data says | Reality |
+| Event | Data | Reality |
 |---|---|---|
+| 2011 all-time high | **1920.61** | 1920.70 |
 | Dec 2015 bear low | **1046.23** | 1046.20 |
-| Aug 2020 all-time high | **2074.87** | 2075.14 |
+| Aug 2020 high | **2074.87** | 2075.14 |
+| Oct 2024 | **2790.05** | ✓ |
+| Apr 2025 peak | **3499.94** | ~3500 |
 | 15 Apr 2013 crash | H 1495.57 → L 1337.09 | the ~$140 one-day crash |
-| Brexit, 24 Jun 2016 | L 1250.34 → H 1358.25 | ✓ |
-| COVID, 16 Mar 2020 | H 1562.94 → L 1451.13 | ✓ |
 
-**Timezone was determined empirically, not assumed.** Peak 15-minute volatility sits
-at exactly `15:30` file-time. US data releases at 8:30 ET = 13:30 UTC in winter and
-12:30 UTC in summer — both map to 15:30 only on an EET/EEST (UTC+2/+3) server clock.
-The daily broker break at 00:00–01:00 file-time (= 5pm ET) confirms it. So the data
-is loaded with `--server-tz 2`, which yields a DST-free clock where London and New
-York sit at fixed hours all year.
+**Timezone was measured, not assumed.** Peak volatility sits at `15:xx` file-time
+in both datasets. US data releases at 8:30 ET = 13:30 UTC winter / 12:30 UTC
+summer — both land on 15:30 only on an EET/EEST (UTC+2/+3) server clock. The daily
+broker break at hour 0 (= 5pm ET) confirms it. Hence `--server-tz 2`, which gives a
+DST-free clock where London and New York sit at fixed hours year-round.
+
+### A data bug worth knowing about
+
+The H1 file stamps dates as `2004.06.11` (yyyy.mm.dd). A dayfirst parse turns that
+into 6 November — **but only on rows where the day is ≤ 12**; rows like `2024.10.30`
+parse correctly because 30 cannot be a month. The result is an index that is
+partly scrambled, still spans the right years, and still looks sorted after a
+`sort_index()`. It showed up as gold trading at $1,817 on its all-time-high day.
+
+`loader.py` now detects year-first formats explicitly and, as a backstop, refuses
+to load any file whose parsed timestamps run backwards relative to file order.
+Sorting over this class of corruption hides it rather than fixing it.
 
 ---
 
-## 2. What the market actually does (this is the valuable part)
+## 2. What gold actually does
 
-Before fitting anything, `research/edge_scan.py` measured conditional forward
-returns directly, in ATR units, with significance from a **daily block bootstrap**
-(a naive t-test on overlapping forward windows is inflated by roughly √h and will
-manufacture edges that aren't there).
+Measured with `research/edge_scan.py`: conditional forward returns in ATR units,
+significance from a **daily block bootstrap** (overlapping forward windows inflate
+a naive t-stat by roughly √h).
 
-### Gold is a momentum market. Fading it is systematically wrong.
+### The confound that matters more than any single result
 
-| Effect | Horizon | Mean move | 95% CI | p |
+Gold went from $380 to $3,400 across this sample. **The unconditional drift is
++0.40 ATR per 48 hours** — so *any* long-biased measurement looks significant.
+This showed up unmistakably: every single day of the week tested "significant"
+and positive (+0.71 to +0.99 ATR). That is not a weekday effect. That is buy-and-hold
+wearing a disguise.
+
+Every number below is therefore reported against its own directional baseline.
+
+### Results after controlling for drift
+
+| Signal | Raw | Baseline | **Excess** | Verdict |
 |---|---|---|---|---|
-| **Asian-range break continuation** | 1h | +0.00 ATR | [−0.04, +0.04] | 0.94 |
-| | 4h | +0.23 ATR | [+0.07, +0.39] | 0.005 |
-| | 8h | **+0.52 ATR** | [+0.19, +0.83] | 0.001 |
-| | 24h | **+0.70 ATR** | [+0.24, +1.18] | 0.007 |
-| Momentum (4h lookback) | 24h | +0.25 ATR | [+0.09, +0.41] | 0.003 |
-| Momentum in expanding vol | 8h | +0.14 ATR | [+0.02, +0.25] | 0.027 |
-| **Prior-day sweep *reversal*** | 8h | **−0.12 ATR** | [−0.34, +0.11] | 0.31 |
-| Asian-session drift | 8h | −0.08 ATR | [−0.22, +0.05] | 0.24 |
+| Asia-range break, **long**, 48h | +0.79 | +0.40 | **+0.39** | real |
+| Asia-range break, **short**, 48h | −0.04 | −0.40 | **+0.36** | real |
+| Momentum (96h lookback), long, 48h | +0.53 | +0.40 | +0.13 | weak |
+| Momentum (96h lookback), short, 48h | −0.21 | −0.40 | +0.19 | weak |
+| Prior-day sweep **reversal** | −0.05 | 0 | **negative** | backwards |
 
-Three findings worth internalising as a trader, independent of any algo:
+Three things worth knowing as a discretionary trader, independent of any algo:
 
-1. **The Asian-range break is real — but the edge is exactly zero in the first
-   hour and accrues over 8–24 hours.** This single fact explains why the standard
-   retail ORB loses: it is *correct about direction* and then exits at the London
-   close, before the move it correctly predicted has happened, having paid the
-   spread for the privilege.
+1. **The Asian-range break carries genuine, symmetric information** — roughly
+   +0.37 ATR of excess move on both sides. But the edge is **near zero in the
+   first hour and accrues over 24–48 hours** (+0.09 at 4h → +0.30 at 24h → +0.39
+   at 48h). This is precisely why the conventional intraday ORB loses money: it is
+   *correct about direction* and then exits at the London close, before the move
+   it correctly predicted has happened, having paid the spread for the privilege.
 
 2. **The liquidity-sweep-reversal premise is backwards.** Fading a prior-day
-   high/low sweep has *negative* expectancy. Sweeps continue more often than they
-   reverse. Anyone teaching the reverse is teaching a losing trade.
+   high/low sweep has negative expectancy at every horizon tested. Sweeps continue
+   more often than they reverse.
 
 3. **Fading gold in the Asian session is a losing trade** (`asian_fade` gross
-   expectancy −0.05R, t = −3.16 *before costs*). The inverse has the edge.
+   expectancy −0.05R, t = −3.16 *before costs*).
 
 ---
 
-## 3. Why the strategies still fail: the cost arithmetic
+## 3. Why the five conventional strategies all failed
 
 Gross vs net expectancy per trade, M15, 10 years:
 
@@ -91,135 +115,128 @@ Gross vs net expectancy per trade, M15, 10 years:
 | donchian | +0.035 | 0.141 | −0.106 |
 | sweep_reversal | +0.008 | 0.173 | −0.165 |
 
-**Cost drag of 0.14–0.25R against gross edges of 0.03–0.07R.** Costs are three to
-five times larger than any edge present. This is the whole story of retail gold
-algo trading in one table.
+**Cost drag of 0.14–0.25R against gross edges of 0.03–0.07R.** Costs three to five
+times larger than the edge. That is the entire story of retail gold algo trading in
+one table.
 
-Drag scales with 1/stop-distance, so moving the same idea to H1 with a wider stop
-cut it from 0.25R to **0.068R** and flipped net expectancy positive. That fix is
-real and worth knowing — it just wasn't enough.
+Drag scales with 1/stop-distance, so moving the same idea to **H1 with a wide stop
+cut drag from 0.25R to 0.068R** — a 4× reduction, achieved by changing nothing about
+the signal. Trade less often, hold longer, stop wider.
 
 ---
 
-## 4. The purpose-built strategy, and its honest result
+## 4. A hypothesis I formed, then falsified
 
-`AsiaBreakMomentum` was built *from* the scan above: H1 execution, wide stop, hold
-8–48 hours, no breakeven and no partial (both truncate the right tail the edge
-lives in), volatility-regime gate.
+Round 1 (2012–2022 data only) found that 2013 and 2020 — both violent trending
+years — contributed more than the entire ten-year profit. The natural hypothesis:
+*the edge is regime-dependent and pays in high-volatility trending markets.*
 
-In-sample it looks respectable — PF 1.20, return/drawdown 2.93, max DD 3.7%. Then:
+The 21-year data killed it. **2023 (−0.003R) and 2024 (−0.006R) — the strongest
+sustained gold trend in modern history — were flat to slightly negative.** A
+volatility-percentile gate built on the hypothesis made results *worse*
+out-of-sample. The 2013/2020 concentration was noise being read as structure.
 
-**Year by year (this is what killed it):**
+Recording this because it is the failure mode this whole harness exists to catch,
+and it caught it in me.
 
-| Year | expR | P&L |
-|---|---|---|
-| 2012 | −0.042 | −2,171 |
-| **2013** | **+0.163** | **+12,911** |
-| 2014 | −0.024 | −2,485 |
-| 2015 | +0.057 | +4,383 |
-| 2016 | −0.108 | −8,305 |
-| 2017 | +0.066 | +4,920 |
-| 2018 | −0.065 | −6,150 |
-| 2019 | −0.078 | −6,545 |
-| **2020** | **+0.270** | **+21,381** |
-| 2021 | +0.049 | +4,007 |
+---
 
-Five of eleven years negative. **2013 and 2020 together contribute more than the
-entire ten-year profit** — the gold crash year and the COVID year, both violent
-high-volatility trending regimes. Remove them and the system loses money.
+## 5. The strategy that works: `AsiaBreakMomentum`
 
-**Walk-forward (24m train / 6m test, 15 folds):**
+Built *from* the measurements above rather than from intuition:
+
+- **H1 execution**, not M15 — cuts cost drag 4× for the same signal
+- **Asian-range break** during London *and* New York hours (07:00–18:00)
+- **Wide stop** (5–8 ATR), **hold up to 48 hours**, time stop not a session bell
+- **No breakeven, no partial** — both truncate exactly the right tail the 24–48h
+  horizon exists to capture
+- **Long-biased.** The signal is symmetric in *excess* terms, but a short
+  additionally pays the secular drift it stands in front of. The walk-forward
+  optimiser independently chose long-only in 13 of 17 folds, using training data
+  only.
+
+### Walk-forward result (36m train / 12m test, 17 folds, 2007–2024)
 
 ```
-trades 527   win 48.0%   PF 1.03   expectancy +0.0083R   t = 0.31
-return +1.96%   maxDD 9.59%   return/DD 0.20   Sharpe 0.10
-fold efficiency 60%
+trades 1601 (7.8/month)   win 51.7%   PF 1.18   expectancy +0.0487R   t = 2.61
+return +46.00%   maxDD 6.66%   return/DD 6.91   folds profitable 71%
+top-trade share 0.01
 ```
 
-That is zero. The in-sample profile was parameter selection, not edge.
+Every quality gate passes: t ≥ 2.0 ✓, folds ≥ 60% ✓, top trade < 30% ✓.
+
+**The honest caveat:** long-biased gold over 2004–2025 is partly a bet that gold
+keeps rising. Buy-and-hold returned +778% over the same span — far more in absolute
+terms — but with a **45% drawdown** that breaches a funded account many times over.
+The strategy's contribution is not out-performing gold; it is extracting a fraction
+of gold's move at a 6.7% drawdown instead of 45%. For a drawdown-limited account
+that trade-off is the whole point.
 
 ---
 
-## 5. What it would actually take
+## 6. Can it pass a funded challenge?
 
-Independent of any price history — pure arithmetic of the rules plus sequencing
-risk. **P(pass phase 1: +10% target, 5% daily loss, 10% max loss), 45% win rate:**
+P(reach +10% before breaching 5% daily / 10% max), from the out-of-sample trade
+stream, block-bootstrapped:
 
-**At 1 trade/day:**
+| Horizon | 0.5% risk | 1.0% risk | 1.5% risk |
+|---|---|---|---|
+| 120 days | 0% | **7%** | 24% |
+| 250 days | 2% | 27% | 50% |
+| 500 days | 18% | **57%** | 70% |
+| 1000 days | 51% | **79%** | 76% |
 
-| | risk 0.50% | 0.75% | 1.00% | 1.50% | 2.00% |
+Trailing-drawdown variant (harder, many newer firms): 57% at 1% risk / 500 days.
+
+**Conclusions:**
+
+- **Do not buy a timed challenge.** 7% in 120 days is paying a fee for a lottery ticket.
+- **An untimed challenge is genuinely winnable** — 79% at 1% risk — but the median
+  time to pass is **320 trading days**, about fifteen months. Budget accordingly.
+- **1.5% risk is not better than 1% at long horizons** (76% vs 79%). The drawdown
+  tripwire starts costing more than the extra size earns. This matches the general
+  requirements grid: every 2% column is worse than the 1% column at equal edge.
+
+---
+
+## 7. What actually fixes the speed problem
+
+Not risk. **Frequency.** From `research/requirements.py`, P(pass phase 1, 120 days):
+
+| | risk 0.5% | 0.75% | 1.0% | 1.5% | 2.0% |
 |---|---|---|---|---|---|
-| exp +0.02R | 13% | 28% | 41% | 49% | 41% |
-| exp +0.10R | 34% | 57% | 67% | 69% | 54% |
-| exp +0.20R | 69% | 84% | **87%** | 82% | 65% |
+| **1 trade/day**, exp +0.10R | 34% | 57% | 67% | 69% | 54% |
+| **3 trades/day**, exp +0.05R | **69%** | 74% | 61% | 45% | 35% |
+| **3 trades/day**, exp +0.10R | **90%** | 88% | 71% | 54% | 39% |
 
-**At 3 trades/day:**
+A *feeble* +0.05R edge taken three times a day beats a strong +0.10R edge taken
+once. We currently have +0.049R at **0.35 trades/day**. The edge is fine; the
+frequency is the problem, and it is short by roughly 10×.
 
-| | risk 0.50% | 0.75% | 1.00% | 1.50% | 2.00% |
-|---|---|---|---|---|---|
-| exp +0.02R | 52% | 61% | 53% | 40% | 31% |
-| exp +0.10R | **90%** | 88% | 71% | 54% | 39% |
-| exp +0.20R | **99%** | 96% | 83% | 64% | 50% |
+**The concrete fix: run the same signal across uncorrelated symbols.** The Asian-range
+break is not gold-specific — it is a liquidity mechanism that exists in every pair
+with a thin Asian session and a busy London one. Ten symbols at 7.8 trades/month
+each gives ~78/month with imperfect correlation, which both raises frequency ~10×
+*and* smooths the equity curve. That combination is what moves a 7% timed pass rate
+into the 60–80% range.
 
-Two things fall out of this that matter more than any strategy:
-
-- **Risking 1.5–2% is worse than risking 1%, almost everywhere on the grid.** The
-  drawdown tripwire bites harder than the extra size helps. Every cell in the 2%
-  column is worse than the 1% column at the same edge. If you take one number from
-  this whole project, take that one.
-- **Frequency substitutes for edge.** At 3 trades/day, a feeble +0.05R passes 69%
-  of the time at 0.5% risk. At 1 trade/day the same edge passes 20%.
-
-**The target: ≥ +0.10R expectancy at ~3 trades/day, risking 0.5–0.75%.**
-Our best out-of-sample result was **+0.008R at 0.3 trades/day** — between 12× and
-25× short. That gap is not closeable by parameter tuning.
+Data for eleven more pairs (EURUSD, GBPJPY, USDJPY, AUDUSD, …) is already available
+from the same source. Doing it properly needs per-symbol spread, contract size and
+pip value in the cost model — that is the next build, and it is the single highest-value
+thing left to do.
 
 ---
 
-## 6. The most important caveat: the data stops in March 2022
+## 8. What to do next, in order
 
-This dataset ends **2022-03-04**. It therefore misses the entire 2022–2026 period,
-including gold's largest sustained bull trend in decades.
-
-That matters more than usual here, because the one thing this research established
-about the edge is that **it is regime-dependent — it pays in high-volatility
-trending years (2013, 2020) and bleeds in quiet ones.** 2023–2025 was exactly the
-former. It is genuinely possible that `AsiaBreakMomentum` performed well over the
-missing four years.
-
-I want to be precise about the epistemics: that is a *hypothesis consistent with
-the measured regime-dependence*, not a result. It cannot be confirmed without the
-data, and "my strategy would have worked in the period I can't test" is the oldest
-self-deception in trading. It is, however, the single highest-value thing to check
-next, and it is cheap to check.
-
----
-
-## 7. What to do next
-
-1. **Export XAUUSD H1 + M15 from your MT5, 2021→today**, and drop it in
-   `quant/data/raw/`. Note your broker's server offset. Then:
-   ```bash
-   python -m quant.run_research wfo --data <file> --server-tz <2 or 3> \
-       --strategy asia_break_momentum --train 24 --test 6
-   ```
-   This directly tests the regime hypothesis above. It is the one experiment that
-   could change the conclusion.
-
-2. **Re-run the edge scan on the recent regime.** If the Asian-break effect is
-   larger post-2022, that is a real finding; if it has decayed, that is also a real
-   finding and settles the question.
-
-3. **Raise frequency, not risk.** The requirements grid says frequency is the
-   cheapest lever available. A +0.10R edge taken 3×/day passes 90%; the same edge
-   taken once a day passes 34%. Widening the entry window, trading both the London
-   and NY session breaks, or running several uncorrelated symbols are all better
-   uses of effort than tuning stop multiples.
-
-4. **Do not fund anything that has not cleared this bar:** t ≥ 2.0 out of sample,
-   ≥ 60% of walk-forward folds profitable, top trade < 30% of total profit, and
-   Monte Carlo pass rate ≥ 70% at ≤ 1% risk. Then demo-forward-test for 4–6 weeks
-   before paying a fee.
+1. **Do not fund anything yet.** Nothing here has been forward-tested.
+2. **Export XAUUSD H1 from your own MT5, 2021→today**, and re-run §5. Your broker's
+   spread and candles are what you will actually trade, and the public data ends
+   June 2025. Command in the README.
+3. **Build the multi-symbol portfolio version** (§7). This is the step that could
+   turn a slow edge into a fundable one.
+4. **Then** demo-forward-test for 4–6 weeks before paying any fee.
+5. **If you buy a challenge, buy an untimed one**, and risk 1% — not 2%.
 
 ---
 
@@ -227,14 +244,13 @@ next, and it is cheap to check.
 
 ```bash
 pip install -r quant/requirements.txt
-python -m quant.run_research selftest                     # validate the engine
-python -m quant.run_research screen --data quant/data/raw/XAUUSDm15.csv \
-    --server-tz 2 --price-scale 100
-python -m quant.run_research wfo --data quant/data/raw/XAUUSDh1.csv \
-    --server-tz 2 --price-scale 100 --strategy asia_break_momentum
+python -m quant.run_research selftest      # causality + null + positive control
+
+# the headline walk-forward
+python -m quant.run_research wfo --data quant/data/raw/XAU_1h_data.csv \
+    --server-tz 2 --strategy asia_break_momentum --train 36 --test 12
 ```
 
-The engine self-validates before any of this: a causality test (signals must be
-bit-identical when future bars are deleted), a null test (structureless data must
-lose ~the cost of trading), and a positive control (a known injected edge must be
-found). All three pass.
+Engine self-validation — a causality test (signals must be bit-identical when future
+bars are deleted), a null test (structureless data must lose ≈ the cost of trading),
+and a positive control (a known injected edge must be found) — all pass.

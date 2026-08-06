@@ -46,8 +46,11 @@ from .indicators import atr, rolling_percentile
 @dataclass
 class AsiaBreakMomentum(Strategy):
     # entry window (UTC hours, on a DST-free broker clock)
+    # Defaults below are the configuration walk-forward selected most often across
+    # 17 folds (see FINDINGS.md §5) — London *and* New York, long-biased, wide stop,
+    # 48h hold. They are documented as such rather than presented as tuned optima.
     entry_start_h: float = 7.0
-    entry_end_h: float = 13.0
+    entry_end_h: float = 18.0
 
     breakout_buffer_atr: float = 0.10
     min_range_atr: float = 0.5
@@ -57,7 +60,7 @@ class AsiaBreakMomentum(Strategy):
     mom_lookback: int = 4
     require_mom_align: bool = True
 
-    stop_atr_mult: float = 2.5
+    stop_atr_mult: float = 8.0
     atr_period: int = 14
 
     # Volatility-regime gate. The edge scan found momentum is significant in
@@ -68,9 +71,18 @@ class AsiaBreakMomentum(Strategy):
     vol_percentile_min: float = 0.0
     vol_lookback: int = 480
 
+    # Direction filter: 0 = both sides, +1 = longs only, -1 = shorts only.
+    # Controlling for gold's secular drift (+0.40 ATR per 48h over 2004-2025),
+    # the break signal carries near-identical *excess* information on both sides
+    # (+0.39 long, +0.36 short). The realised P&L does not match that symmetry,
+    # because a short additionally pays the drift it is standing in front of.
+    # Restricting to longs therefore keeps the signal and stops donating the
+    # baseline — at the cost of being an explicit bet that gold keeps rising.
+    direction: int = 1
+
     # Let it run. The edge is at 8-24h, so the exits are deliberately loose.
-    trail_atr_mult: float | None = 4.0
-    max_bars: int | None = 24
+    trail_atr_mult: float | None = None
+    max_bars: int | None = 48
     max_trades_per_day: int | None = 1
     breakeven_at_r: float | None = None
     partial_at_r: float | None = None
@@ -107,8 +119,10 @@ class AsiaBreakMomentum(Strategy):
         base = in_window & ok_width & hi.notna()
         if self.vol_percentile_min > 0.0:
             base = base & (rolling_percentile(a, self.vol_lookback) >= self.vol_percentile_min)
-        out["long_signal"] = (base & fresh_up).fillna(False)
-        out["short_signal"] = (base & fresh_dn).fillna(False)
+        long_ok = self.direction >= 0
+        short_ok = self.direction <= 0
+        out["long_signal"] = (base & fresh_up).fillna(False) & long_ok
+        out["short_signal"] = (base & fresh_dn).fillna(False) & short_ok
 
         stop_dist = self.stop_atr_mult * a
         out["stop_long"] = df["close"] - stop_dist

@@ -63,6 +63,43 @@ class PropFirmRules:
         """Live funded stage: no target to hit, just don't breach."""
         return cls(initial_balance=balance, profit_target_pct=10.0, min_trading_days=0)
 
+    # ── FundingPips presets ────────────────────────────────────────────────
+    # Compiled from public documentation, August 2026. Prop firm terms change
+    # often and differ by plan — re-read the live rulebook for the exact plan you
+    # buy before trusting any number these produce.
+    #
+    # Two details of theirs that matter and are modelled here:
+    #   * the daily limit is measured against the *higher* of the day's opening
+    #     balance or opening equity, and counts floating P&L
+    #   * the max loss is a static floor from the starting balance, and each
+    #     phase starts with a fresh drawdown budget
+    # The daily reset is 00:00 platform time (UTC+3), i.e. 21:00 UTC.
+
+    @classmethod
+    def fundingpips_2step_p1(cls, balance: float = 5_000.0) -> "PropFirmRules":
+        return cls(initial_balance=balance, profit_target_pct=0.08, daily_loss_pct=0.05,
+                   max_loss_pct=0.10, trailing_max_loss=False, min_trading_days=3,
+                   max_calendar_days=None, reset_hour_utc=21)
+
+    @classmethod
+    def fundingpips_2step_p2(cls, balance: float = 5_000.0) -> "PropFirmRules":
+        return cls(initial_balance=balance, profit_target_pct=0.05, daily_loss_pct=0.05,
+                   max_loss_pct=0.10, trailing_max_loss=False, min_trading_days=3,
+                   max_calendar_days=None, reset_hour_utc=21)
+
+    @classmethod
+    def fundingpips_1step_flex(cls, balance: float = 5_000.0) -> "PropFirmRules":
+        return cls(initial_balance=balance, profit_target_pct=0.10, daily_loss_pct=0.04,
+                   max_loss_pct=0.06, trailing_max_loss=False, min_trading_days=3,
+                   max_calendar_days=None, reset_hour_utc=21)
+
+    @classmethod
+    def fundingpips_zero(cls, balance: float = 5_000.0) -> "PropFirmRules":
+        """Instant-funded: no target, but a 5% *trailing* floor and a 3% daily cap."""
+        return cls(initial_balance=balance, profit_target_pct=10.0, daily_loss_pct=0.03,
+                   max_loss_pct=0.05, trailing_max_loss=True, min_trading_days=0,
+                   max_calendar_days=None, reset_hour_utc=21)
+
 
 @dataclass
 class PropFirmResult:

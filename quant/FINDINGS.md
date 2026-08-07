@@ -306,3 +306,91 @@ python -m quant.run_research wfo --data quant/data/raw/XAU_1h_data.csv \
 Engine self-validation — a causality test (signals must be bit-identical when future
 bars are deleted), a null test (structureless data must lose ≈ the cost of trading),
 and a positive control (a known injected edge must be found) — all pass.
+
+---
+
+# Appendix: FundingPips $5,000 account
+
+**Rules below are compiled from public third-party documentation in August 2026.
+fundingpips.com and their help centre are both blocked by this environment's egress
+proxy, so I could not read the primary source. Verify every number on their live
+rulebook for the exact plan you buy before paying.** Prop firm terms change often
+and differ by plan.
+
+## The plans
+
+| Plan | Target | Daily loss | Max loss | Type | Min days | Time limit |
+|---|---|---|---|---|---|---|
+| **2-Step Standard** | 8% then 5% | 5% | 10% | **static** | 3/phase | **unlimited** |
+| 1-Step Flex | 10% | 4% | 6% | static | 3 | unlimited |
+| 2-Step Pro | 6% then 6% | 3% | ~8% | trailing | 3/phase | unlimited |
+| Zero (instant) | none | 3% | 5% | **trailing** | — | — |
+
+$5,000 entry is around $29–40 depending on plan. Two mechanics worth internalising:
+
+- **Daily loss is measured against the higher of the day's opening balance or
+  opening equity, and it counts floating P&L.** A trade 5.1% underwater at 14:00
+  that recovers by 17:00 is still a breach. Resets 00:00 platform time = 21:00 UTC.
+- **Each phase starts with a fresh 10% drawdown budget.** Two phases at 8%+5% is
+  materially easier than one 13% run, which is why the two-step beats the one-step
+  below despite the higher total target.
+
+## Automation is allowed — and you already have the proof they ask for
+
+Full automation is permitted **on an EA you wrote yourself**, provided you can show
+ownership: source code, version-control history, development environment, or
+explaining the logic on a call. A compiled `.ex5` on its own is not accepted.
+
+This git repository — commit history, research that motivated each rule, the
+walk-forward that selected the parameters — is a stronger ownership record than
+most people can produce. Keep it.
+
+Banned: third-party/off-the-shelf EAs (allowed only as a trade/risk *manager*),
+copy trading inbound from any source, and anyone else trading your account.
+
+## The constraint nobody mentions: lot granularity
+
+Gold is ~$3,369 and median H1 ATR(14) in 2025 is **$8.64**. Minimum lot is 0.01,
+which on gold is $1 per $1 move. So:
+
+| Stop | Stop distance | Risk of the **smallest possible position** on $5,000 |
+|---|---|---|
+| 5 × ATR | $43.20 | **0.86%** |
+| 8 × ATR | $69.12 | **1.38%** |
+
+**You cannot risk 0.5% per trade on a $5,000 gold account with this strategy.** The
+smallest trade you are able to place already risks 0.86–1.38%, and sizing is
+quantised — 0.86%, 1.73%, 2.59%… There is no fine control. Every "risk 0.5%" piece
+of advice on the internet is unimplementable at this account size on this
+instrument, and the constraint disappears entirely by $25,000.
+
+## What that means for pass probability
+
+Using the out-of-sample trade stream from §5, FundingPips 2-Step Standard, $5,000:
+
+| Config | Risk/trade | P(phase 1) | P(phase 2) | **P(both)** | Breach risk | Median days |
+|---|---|---|---|---|---|---|
+| 0.01 lot, 5×ATR | 0.86% | 73.9% | 84.1% | **62.1%** | 7.5% | 438 |
+| 0.01 lot, 8×ATR | 1.38% | 77.5% | 83.0% | **64.3%** | 20.3% | 235 |
+| 0.02 lot, 5×ATR | 1.73% | 75.2% | 80.4% | 60.5% | 24.4% | 162 |
+| 0.02 lot, 8×ATR | 2.76% | 64.8% | 71.9% | 46.6% | 35.2% | 69 |
+
+1-Step Flex is worse at every risk level (63% at 1% risk, 30% breach risk) — the 6%
+max loss is too tight for a 48-hour hold.
+
+**Zero is the wrong plan for this strategy.** Its 5% *trailing* drawdown at 1% risk
+gives a **10.6%** chance of surviving 500 days. At 0.5% risk it is 73% — but 0.5%
+is not achievable on a $5,000 gold account, per above. Do not buy Zero for this.
+
+## Recommendation
+
+**2-Step Standard, $5,000, 0.01 lot with the 5×ATR stop (0.86% per trade).**
+62% to pass both phases, only 7.5% chance of blowing phase 1, median ~438 trading
+days. The 8×ATR variant passes marginally more often (64%) and nearly three times
+faster, but at 2.7× the breach risk — on a paid challenge the slower, safer version
+is the better buy, since a breach costs the fee and a slow pass costs only time.
+
+**Everything above still rests on §7.** The edge is probably gold's uptrend rather
+than an inefficiency. A 62% pass probability is real arithmetic applied to a
+strategy whose edge may not persist. Forward-test on their free trial or a demo
+before paying, and re-run §5 on your own broker's data first.

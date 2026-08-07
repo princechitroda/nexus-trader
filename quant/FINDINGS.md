@@ -382,11 +382,28 @@ max loss is too tight for a 48-hour hold.
 gives a **10.6%** chance of surviving 500 days. At 0.5% risk it is 73% — but 0.5%
 is not achievable on a $5,000 gold account, per above. Do not buy Zero for this.
 
+## How long does it actually take?
+
+Both phases simulated **jointly** (quantiles do not add — summing each phase's 25th
+percentile describes both phases going fast at once, which is rarer than either
+alone, and overstates the spread at both ends). Calendar months at 21.7 trading
+days/month. Time is unlimited, so nothing times out; runs either pass or breach.
+
+| Config | Risk/trade | P(pass both) | Blow up | Fast 25% | **Median** | Slow 25% | Slowest 10% |
+|---|---|---|---|---|---|---|---|
+| 0.01 lot, 5×ATR | 0.86% | **68%** | 15% | 17.1 mo | **25.7 mo** | 36.4 mo | 45.4 mo |
+| 0.01 lot, 8×ATR | 1.38% | 66% | 33% | 8.3 mo | **13.4 mo** | 20.8 mo | 29.0 mo |
+| 0.02 lot, 5×ATR | 1.73% | 61% | 39% | 5.7 mo | **9.3 mo** | 14.5 mo | 20.6 mo |
+| 0.02 lot, 8×ATR | 2.76% | 47% | 53% | 2.5 mo | **4.0 mo** | 6.1 mo | 9.0 mo |
+
+Pass probability is nearly flat from 0.86% to 1.38% risk (68% → 66%) while the time
+halves — but the blow-up rate doubles, 15% → 33%. Past that, both get worse together.
+There is no configuration here that is both fast and safe; the edge is too small.
+
 ## Recommendation
 
 **2-Step Standard, $5,000, 0.01 lot with the 5×ATR stop (0.86% per trade).**
-62% to pass both phases, only 7.5% chance of blowing phase 1, median ~438 trading
-days. The 8×ATR variant passes marginally more often (64%) and nearly three times
+68% to pass both phases, 15% chance of blowing up, median **~26 months**. The 8×ATR variant passes marginally more often (64%) and nearly three times
 faster, but at 2.7× the breach risk — on a paid challenge the slower, safer version
 is the better buy, since a breach costs the fee and a slow pass costs only time.
 
